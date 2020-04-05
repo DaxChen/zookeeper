@@ -35,3 +35,11 @@ cd bin
 
 ## Running Experiments
 
+
+## Develop Client program with Java API in Eclipse
+1. build zookeeper using ant
+2. In eclipse, create a Java project
+3. Right click on your Java project -> build path -> add Libraries
+4. User Libraries -> User Libraries... -> new -> name:zookeeper-cs739
+5. Add external JARs... -> add build/zookeeper-3.4.12.jar & all jars in build/lib
+6. Now you can import zookeeper in your java code
