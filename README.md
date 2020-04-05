@@ -1,36 +1,31 @@
-For the latest information about ZooKeeper, please visit our website at:
+# CS739 Final Project
 
-   http://zookeeper.apache.org/
+> Providing different consistency level containers for zookeeper
 
-and our wiki, at:
+This branch `cs739/dev` is based on tag `release-3.4.12`
 
-   https://cwiki.apache.org/confluence/display/ZOOKEEPER
+## setup
 
-Full documentation for this release can also be found in docs/index.html
+```sh
+# clone this repo
+git clone https://github.com/YiShiunChang/zookeeper
 
----------------------------
-Packaging/release artifacts
+cd zookeeper
 
-The release artifact contains the following jar file at the toplevel:
+# make sure you are on the right branch
+git checkout cs739/dev
+```
 
-zookeeper-<version>.jar         - legacy jar file which contains all classes
-                                  and source files. Prior to version 3.3.0 this
-                                  was the only jar file available. It has the 
-                                  benefit of having the source included (for
-                                  debugging purposes) however is also larger as
-                                  a result
+## build
 
-The release artifact contains the following jar files in "dist-maven" directory:
+```sh
+# build zookeeper
+ant
+```
 
-zookeeper-<version>.jar         - bin (binary) jar - contains only class (*.class) files
-zookeeper-<version>-sources.jar - contains only src (*.java) files
-zookeeper-<version>-javadoc.jar - contains only javadoc files
+## Running Replicated ZooKeeper
 
-These bin/src/javadoc jars were added specifically to support Maven/Ivy which have 
-the ability to pull these down automatically as part of your build process. 
-The content of the legacy jar and the bin+sources jar are the same.
+TODO
 
-As of version 3.3.0 bin/sources/javadoc jars contained in dist-maven directory
-are deployed to the Apache Maven repository after the release has been accepted
-by Apache:
-  http://people.apache.org/repo/m2-ibiblio-rsync-repository/
+## Running Experiments
+
