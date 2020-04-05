@@ -25,7 +25,13 @@ ant
 
 ## Running Replicated ZooKeeper
 
-TODO
+```
+cd bin
+[use three different shell, e.g. using tmux]
+./zkServer.sh start-foreground ../conf/zoo-1.cfg
+./zkServer.sh start-foreground ../conf/zoo-2.cfg
+./zkServer.sh start-foreground ../conf/zoo-3.cfg
+```
 
 ## Running Experiments
 
