@@ -1,0 +1,5 @@
+*
+.gitignore
+!data-1/myid
+!data-2/myid
+!data-3/myid
