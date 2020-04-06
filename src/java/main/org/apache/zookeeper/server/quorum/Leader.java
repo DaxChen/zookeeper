@@ -52,6 +52,10 @@ import org.apache.zookeeper.server.util.ZxidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.LocalTime;
+import org.apache.zookeeper.ZooDefs.OpCode;
+
 /**
  * This class has the control logic for the Leader.
  */
@@ -555,6 +559,8 @@ public class Leader {
      * @param followerAddr
      */
     synchronized public void processAck(long sid, long zxid, SocketAddress followerAddr) {
+        LOG.info("[Debug] processAck starts");
+        LocalTime time1 = LocalTime.now();
         if (LOG.isTraceEnabled()) {
             LOG.trace("Ack zxid: 0x{}", Long.toHexString(zxid));
             for (Proposal p : outstandingProposals.values()) {
@@ -616,13 +622,24 @@ public class Leader {
             }
             commit(zxid);
             inform(p);
+            
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
                 for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
+                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                     sendSync(r);
                 }
             }
         }
+        LocalTime time2 = LocalTime.now();
+        Duration duration = Duration.between(time1, time2); // seconds
+        LOG.info("[Debug] processAck ends");
+        System.out.println("[Debug]request: "+ p.request);
+        if(p.request.type == OpCode.setData){
+            System.out.println("[Debug] p.request with type setData"); 
+            System.out.println("[Debug] setData processRequest time: " + duration); 
+        }
+        
     }
 
     static class ToBeAppliedRequestProcessor implements RequestProcessor {

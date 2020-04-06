@@ -42,10 +42,12 @@ class AckRequestProcessor implements RequestProcessor {
      */
     public void processRequest(Request request) {
         QuorumPeer self = leader.self;
-        if(self != null)
+        if(self != null){
+            LOG.info("[Debug] Leader.REQUEST, leader directly processRequest");
             leader.processAck(self.getId(), request.zxid, null);
-        else
+        }else{
             LOG.error("Null QuorumPeer");
+        }
     }
 
     public void shutdown() {

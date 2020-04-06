@@ -575,6 +575,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
                 switch (qp.getType()) {
                 case Leader.ACK:
+                    LOG.info("[Debug] Leader.ACK");
                     if (this.learnerType == LearnerType.OBSERVER) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Received ACK from Observer  " + this.sid);
@@ -623,7 +624,8 @@ public class LearnerHandler extends ZooKeeperThread {
                     qp.setData(bos.toByteArray());
                     queuedPackets.add(qp);
                     break;
-                case Leader.REQUEST:                    
+                case Leader.REQUEST:      
+                    LOG.info("[Debug] Leader.REQUEST, follower redirects request to leader\n");
                     bb = ByteBuffer.wrap(qp.getData());
                     sessionId = bb.getLong();
                     cxid = bb.getInt();

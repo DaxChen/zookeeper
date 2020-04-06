@@ -349,6 +349,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if (createMode.isSequential()) {
                     path = path + String.format(Locale.ENGLISH, "%010d", parentCVersion);
                 }
+                request.userDataPath = path; // update node path
                 validatePath(path, request.sessionId);
                 try {
                     if (getRecordForPath(path) != null) {
@@ -382,6 +383,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, deleteRequest);
                 path = deleteRequest.getPath();
+                request.userDataPath = path; // update node path
                 lastSlash = path.lastIndexOf('/');
                 if (lastSlash == -1 || path.indexOf('\0') != -1
                         || zks.getZKDatabase().isSpecialPath(path)) {
@@ -412,6 +414,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, setDataRequest);
                 path = setDataRequest.getPath();
+                request.userDataPath = path; // update node path
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
                 checkACL(zks, nodeRecord.acl, ZooDefs.Perms.WRITE,
@@ -433,6 +436,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, setAclRequest);
                 path = setAclRequest.getPath();
+                request.userDataPath = path; // update node path
                 validatePath(path, request.sessionId);
                 listACL = removeDuplicates(setAclRequest.getAcl());
                 if (!fixupACL(request.authInfo, listACL)) {
@@ -493,6 +497,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, checkVersionRequest);
                 path = checkVersionRequest.getPath();
+                request.userDataPath = path; // update node path
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
                 checkACL(zks, nodeRecord.acl, ZooDefs.Perms.READ,
