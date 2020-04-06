@@ -564,7 +564,6 @@ public class Leader {
             }
             LOG.trace("outstanding proposals all");
         }
-
         if ((zxid & 0xffffffffL) == 0) {
             /*
              * We no longer process NEWLEADER ack by this method. However,
@@ -573,7 +572,6 @@ public class Leader {
              */
             return;
         }
-    
         if (outstandingProposals.size() == 0) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("outstanding is 0");
@@ -595,12 +593,65 @@ public class Leader {
             return;
         }
         
+        
         p.ackSet.add(sid);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Count for zxid: 0x{} is {}",
                     Long.toHexString(zxid), p.ackSet.size());
         }
-        if (self.getQuorumVerifier().containsQuorum(p.ackSet)){             
+      	
+      	// strong consistency with nodePath1
+      	if (p.request.userDataPath != null && 
+      			p.request.userDataPath.substring(1, 2).compareTo("1") == 0 &&
+      			self.getQuorumVerifier().containsQuorum(p.ackSet)) {
+      		System.out.println("======================= strong case =======================");
+          if (zxid != lastCommitted+1) {
+              LOG.warn("Commiting zxid 0x{} from {} not first!",
+                      Long.toHexString(zxid), followerAddr);
+              LOG.warn("First is 0x{}", Long.toHexString(lastCommitted + 1));
+          }
+          outstandingProposals.remove(zxid);
+          if (p.request != null) {
+              toBeApplied.add(p);
+          }
+
+          if (p.request == null) {
+              LOG.warn("Going to commmit null request for proposal: {}", p);
+          }
+          commit(zxid);
+          inform(p);
+          zk.commitProcessor.commit(p.request);
+          if(pendingSyncs.containsKey(zxid)){
+              for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
+                  sendSync(r);
+              }
+          } // weak consistency with nodePath 2
+      	} else if (p.request.userDataPath != null && 
+      			p.request.userDataPath.substring(1, 2).compareTo("2") == 0) {
+      			System.out.println("======================= weak case =======================");
+	          if (zxid != lastCommitted+1) {
+	              LOG.warn("Commiting zxid 0x{} from {} not first!",
+	                      Long.toHexString(zxid), followerAddr);
+	              LOG.warn("First is 0x{}", Long.toHexString(lastCommitted + 1));
+	          }
+	          outstandingProposals.remove(zxid);
+	          if (p.request != null) {
+	              toBeApplied.add(p);
+	          }
+	
+	          if (p.request == null) {
+	              LOG.warn("Going to commmit null request for proposal: {}", p);
+	          }
+	          commit(zxid);
+	          inform(p);
+	          zk.commitProcessor.commit(p.request);
+	          if(pendingSyncs.containsKey(zxid)){
+	              for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
+	                  sendSync(r);
+	              }
+	          } // normal case 
+        } else if (self.getQuorumVerifier().containsQuorum(p.ackSet)) { 
+        		System.out.println("======================= normal case =======================");
             if (zxid != lastCommitted+1) {
                 LOG.warn("Commiting zxid 0x{} from {} not first!",
                         Long.toHexString(zxid), followerAddr);
@@ -832,10 +883,8 @@ public class Leader {
      * @param handler handler of the follower
      * @return last proposed zxid
      */
-    synchronized public long startForwarding(LearnerHandler handler,
-            long lastSeenZxid) {
-        // Queue up any outstanding requests enabling the receipt of
-        // new requests
+    synchronized public long startForwarding(LearnerHandler handler, long lastSeenZxid) {
+        // Queue up any outstanding requests enabling the receipt of new requests
         if (lastProposed > lastSeenZxid) {
             for (Proposal p : toBeApplied) {
                 if (p.packet.getZxid() <= lastSeenZxid) {

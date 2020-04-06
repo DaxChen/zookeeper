@@ -90,6 +90,8 @@ public class Request {
         this.owner = owner;
     }
 
+    public String userDataPath;
+
     /**
      * is the packet type a valid packet in zookeeper
      * 
@@ -228,6 +230,9 @@ public class Request {
             }
         }
         sb.append(" reqpath:").append(path);
+        sb.append(" userDataPath:").append(userDataPath);
+
+        
 
         return sb.toString();
     }
