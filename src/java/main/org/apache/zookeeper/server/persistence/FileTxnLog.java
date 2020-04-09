@@ -199,6 +199,9 @@ public class FileTxnLog implements TxnLog {
         if (hdr == null) {
             return false;
         }
+        LOG.info("hdr: " + hdr);
+        LOG.info("txn: " + txn);
+        LOG.info("txn path: " + txn.toString().split(",")[0]);
 
         if (hdr.getZxid() <= lastZxidSeen) {
             LOG.warn("Current zxid " + hdr.getZxid()
@@ -577,6 +580,8 @@ public class FileTxnLog implements TxnLog {
          * @throws IOException
          */
         void init() throws IOException {
+            LOG.info("======== Start FileTxnIterator init ======== ");
+
             storedFiles = new ArrayList<File>();
             List<File> files = Util.sortDataDir(FileTxnLog.getLogFiles(logDir.listFiles(), 0), LOG_FILE_PREFIX, false);
             for (File f: files) {
@@ -589,13 +594,19 @@ public class FileTxnLog implements TxnLog {
                     break;
                 }
             }
+            LOG.info("======== finish FileTxnIterator init ======== ");
+            LOG.info("======== Start goToNextLog ======== ");
             goToNextLog();
+            LOG.info("======== Finish goToNextLog ======== ");
+
             if (!next())
                 return;
             while (hdr.getZxid() < zxid) {
                 if (!next())
                     return;
             }
+            
+        
         }
 
         /**
@@ -666,7 +677,10 @@ public class FileTxnLog implements TxnLog {
             }
             try {
                 long crcValue = ia.readLong("crcvalue");
+                LOG.info("======== Start readTxnBytes =======");
                 byte[] bytes = Util.readTxnBytes(ia);
+                LOG.info("======== Finish readTxnBytes =======");
+
                 // Since we preallocate, we define EOF to be an
                 if (bytes == null || bytes.length==0) {
                     throw new EOFException("Failed to read " + logFile);

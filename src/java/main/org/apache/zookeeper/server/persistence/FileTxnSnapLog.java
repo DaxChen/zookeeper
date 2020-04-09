@@ -185,7 +185,10 @@ public class FileTxnSnapLog {
     public long fastForwardFromEdits(DataTree dt, Map<Long, Integer> sessions,
                                      PlayBackListener listener) throws IOException {
         FileTxnLog txnLog = new FileTxnLog(dataDir);
-        TxnIterator itr = txnLog.read(dt.lastProcessedZxid+1);
+        LOG.info("======== Start Reading txnLog ======== ");
+        TxnIterator itr = txnLog.read(dt.lastProcessedZxid+1); // header
+        LOG.info("======== Finish Reading txnLog ======== ");
+
         long highestZxid = dt.lastProcessedZxid;
         TxnHeader hdr;
         try {
@@ -193,6 +196,13 @@ public class FileTxnSnapLog {
                 // iterator points to 
                 // the first valid txn when initialized
                 hdr = itr.getHeader();
+                Record txn = itr.getTxn();
+                LOG.info("fastForwardFromEdits hdr: " + hdr);
+                LOG.info("fastForwardFromEdits txn: " + txn);
+                if(txn != null){
+                    LOG.info("fastForwardFromEdits txn path: " + txn.toString().split(",")[0]);
+                }
+
                 if (hdr == null) {
                     //empty logs 
                     return dt.lastProcessedZxid;
@@ -210,9 +220,16 @@ public class FileTxnSnapLog {
                    throw new IOException("Failed to process transaction type: " +
                          hdr.getType() + " error: " + e.getMessage(), e);
                 }
+                LOG.info("========== [Debug] Start listener.onTxnLoaded ===========");
                 listener.onTxnLoaded(hdr, itr.getTxn());
-                if (!itr.next()) 
+                LOG.info("========== [Debug] Finish listener.onTxnLoaded ===========");
+                LOG.info("========== [Debug] Start itr.next() ===========");
+                if (!itr.next()) {
+                    LOG.info("========== [Debug] finish itr.next() ===========");
                     break;
+                }else{
+                    LOG.info("========== [Debug] Finish itr.next() ===========");
+                }
             }
         } finally {
             if (itr != null) {

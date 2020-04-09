@@ -274,6 +274,7 @@ public class FinalRequestProcessor implements RequestProcessor {
                 break;
             }
             case OpCode.getData: {
+                LOG.info("[Debug] OpCode.getData");
                 lastOp = "GETD";
                 GetDataRequest getDataRequest = new GetDataRequest();
                 ByteBufferInputStream.byteBuffer2Record(request.request,
@@ -289,6 +290,9 @@ public class FinalRequestProcessor implements RequestProcessor {
                 byte b[] = zks.getZKDatabase().getData(getDataRequest.getPath(), stat,
                         getDataRequest.getWatch() ? cnxn : null);
                 rsp = new GetDataResponse(b, stat);
+                LOG.info("[Debug] Datanode n.data:" + n.data);
+                LOG.info("[Debug] response rsp:" + rsp);
+
                 break;
             }
             case OpCode.setWatches: {

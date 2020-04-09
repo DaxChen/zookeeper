@@ -206,6 +206,8 @@ public class Util {
     public static byte[] readTxnBytes(InputArchive ia) throws IOException {
         try{
             byte[] bytes = ia.readBuffer("txtEntry");
+            LOG.info("======== readTxnBytes Bytes: =======" + bytes);
+
             // Since we preallocate, we define EOF to be an
             // empty transaction
             if (bytes.length == 0)
