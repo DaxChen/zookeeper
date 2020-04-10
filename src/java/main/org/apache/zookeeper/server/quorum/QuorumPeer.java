@@ -633,6 +633,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     @Override
     public synchronized void start() {
         loadDataBase();
+
         cnxnFactory.start();        
         startLeaderElection();
         super.start();
@@ -642,11 +643,14 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         File updating = new File(getTxnFactory().getSnapDir(),
                                  UPDATING_EPOCH_FILENAME);
 		try {
-            zkDb.loadDataBase();
+            this.zkDb.loadDataBase();
+            // cs739 isolation, need to know corrupted path
+            System.out.println("here's the corrupted path:"+ this.logFactory.CorruptedPath);
 
             // load the epochs
             long lastProcessedZxid = zkDb.getDataTree().lastProcessedZxid;
-    		long epochOfZxid = ZxidUtils.getEpochFromZxid(lastProcessedZxid);
+            long epochOfZxid = ZxidUtils.getEpochFromZxid(lastProcessedZxid);
+            LOG.info("========= loadDataBase ========== lastProcessZxid {} epochOfZxid {}", lastProcessedZxid, epochOfZxid);
             try {
             	currentEpoch = readLongFromFile(CURRENT_EPOCH_FILENAME);
                 if (epochOfZxid > currentEpoch && updating.exists()) {

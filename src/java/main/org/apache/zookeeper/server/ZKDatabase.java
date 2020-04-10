@@ -215,6 +215,8 @@ public class ZKDatabase {
      */
     public long loadDataBase() throws IOException {
         long zxid = snapLog.restore(dataTree, sessionsWithTimeouts, commitProposalPlaybackListener);
+        System.out.println("loadDataBase here's the corrupted path:"+ snapLog.getCorruptedPath());
+
         initialized = true;
         return zxid;
     }
@@ -505,5 +507,5 @@ public class ZKDatabase {
     public void close() throws IOException {
         this.snapLog.close();
     }
-    
+
 }

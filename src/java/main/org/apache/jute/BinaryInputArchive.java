@@ -88,6 +88,7 @@ public class BinaryInputArchive implements InputArchive {
 
     public byte[] readBuffer(String tag) throws IOException {
         int len = readInt(tag);
+        System.out.println("========== readBuffer len = " + len + " =================");
         if (len == -1) return null;
         checkLength(len);
         byte[] arr = new byte[len];

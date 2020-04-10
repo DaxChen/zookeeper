@@ -21,6 +21,7 @@ package org.apache.zookeeper.server.persistence;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +60,9 @@ public class FileTxnSnapLog {
     
     private static final Logger LOG = LoggerFactory.getLogger(FileTxnSnapLog.class);
     
+
+    public HashSet<String> CorruptedPath = new HashSet<String>();
+
     /**
      * This listener helps
      * the external apis calling
@@ -184,10 +188,12 @@ public class FileTxnSnapLog {
      */
     public long fastForwardFromEdits(DataTree dt, Map<Long, Integer> sessions,
                                      PlayBackListener listener) throws IOException {
+        
         FileTxnLog txnLog = new FileTxnLog(dataDir);
-        LOG.info("======== Start Reading txnLog ======== ");
+        LOG.info("======== Start Reading txnLog ======== " + dataDir.toString());
         TxnIterator itr = txnLog.read(dt.lastProcessedZxid+1); // header
-        LOG.info("======== Finish Reading txnLog ======== ");
+
+        LOG.info("======== Finish Reading txnLog ======== lastProcessedZxid+1 = " + (dt.lastProcessedZxid+1));
 
         long highestZxid = dt.lastProcessedZxid;
         TxnHeader hdr;
@@ -197,10 +203,16 @@ public class FileTxnSnapLog {
                 // the first valid txn when initialized
                 hdr = itr.getHeader();
                 Record txn = itr.getTxn();
+                LOG.info("txn corrupted or not:" + itr.getCorrupted());
                 LOG.info("fastForwardFromEdits hdr: " + hdr);
                 LOG.info("fastForwardFromEdits txn: " + txn);
                 if(txn != null){
+                    String path = txn.toString().split(",")[0];
+                    if (itr.getCorrupted()) {
+                        CorruptedPath.add(path);
+                    }
                     LOG.info("fastForwardFromEdits txn path: " + txn.toString().split(",")[0]);
+                    LOG.info("updated new corrupt paths = " + CorruptedPath.toString());
                 }
 
                 if (hdr == null) {
@@ -236,6 +248,7 @@ public class FileTxnSnapLog {
                 itr.close();
             }
         }
+        LOG.info("finally new corrupt paths = " + CorruptedPath.toString());
         return highestZxid;
     }
     
@@ -436,5 +449,9 @@ public class FileTxnSnapLog {
         public SnapDirContentCheckException(String msg) {
             super(msg);
         }
+    }
+
+    public HashSet<String> getCorruptedPath(){
+        return CorruptedPath;
     }
 }

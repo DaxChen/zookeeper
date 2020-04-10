@@ -332,6 +332,7 @@ public class FileTxnLog implements TxnLog {
         // if a log file is more recent we must scan it to find
         // the highest zxid
         long zxid = maxLog;
+        LOG.info("found max Log zxid =" + zxid);
         TxnIterator itr = null;
         try {
             FileTxnLog txn = new FileTxnLog(logDir);
@@ -556,6 +557,9 @@ public class FileTxnLog implements TxnLog {
         File logFile;
         InputArchive ia;
         static final String CRC_ERROR="CRC check failed";
+
+        // cs739 isolate corrupted data
+        boolean recordCorrupted; 
        
         PositionInputStream inputStream=null;
         //stored files is the list of files greater than
@@ -599,9 +603,12 @@ public class FileTxnLog implements TxnLog {
             goToNextLog();
             LOG.info("======== Finish goToNextLog ======== ");
 
-            if (!next())
+            if (!next()){
+                LOG.info("======== no next() ======== ");
                 return;
+            }
             while (hdr.getZxid() < zxid) {
+                LOG.info("======== inside while loop ======== ");
                 if (!next())
                     return;
             }
@@ -619,8 +626,12 @@ public class FileTxnLog implements TxnLog {
             if (storedFiles.size() > 0) {
                 this.logFile = storedFiles.remove(storedFiles.size()-1);
                 ia = createInputArchive(this.logFile);
+                LOG.info("has next log");
+                // long crcValue = ia.readLong("crcvalue");
+                // LOG.info("crcvalue="+crcValue);
                 return true;
             }
+            LOG.info("no next log");
             return false;
         }
 
@@ -677,6 +688,7 @@ public class FileTxnLog implements TxnLog {
             }
             try {
                 long crcValue = ia.readLong("crcvalue");
+                LOG.info("======== Start readTxnBytes crcvalue {} =======", crcValue);
                 LOG.info("======== Start readTxnBytes =======");
                 byte[] bytes = Util.readTxnBytes(ia);
                 LOG.info("======== Finish readTxnBytes =======");
@@ -689,8 +701,12 @@ public class FileTxnLog implements TxnLog {
                 // validate CRC
                 Checksum crc = makeChecksumAlgorithm();
                 crc.update(bytes, 0, bytes.length);
-                if (crcValue != crc.getValue())
-                    throw new IOException(CRC_ERROR);
+                // cs739 catch record corrupted
+                if (crcValue != crc.getValue()){
+                    recordCorrupted = true;
+                    LOG.warn("Error occur crc check fail!!!!");
+                }
+                    // throw new IOException(CRC_ERROR);
                 hdr = new TxnHeader();
                 record = SerializeUtils.deserializeTxn(bytes, hdr);
             } catch (EOFException e) {
@@ -740,6 +756,10 @@ public class FileTxnLog implements TxnLog {
                 inputStream.close();
             }
         }
-    }
+
+        public boolean getCorrupted() {
+            return recordCorrupted;
+        }
+     }
 
 }

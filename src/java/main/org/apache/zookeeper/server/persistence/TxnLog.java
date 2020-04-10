@@ -116,6 +116,11 @@ public interface TxnLog {
          * @throws IOException
          */
         void close() throws IOException;
+
+        /**
+         * cs739 finding corrupted data
+         */
+        boolean getCorrupted();
     }
 }
 
