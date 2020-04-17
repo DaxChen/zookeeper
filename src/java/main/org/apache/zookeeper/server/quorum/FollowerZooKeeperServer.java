@@ -91,9 +91,12 @@ public class FollowerZooKeeperServer extends LearnerZooKeeperServer {
         request.hdr = hdr;
         request.txn = txn;
         request.zxid = hdr.getZxid();
+        LOG.debug("\u001b[0;31m" + "FZK.logRequest" + "\u001b[m ");
+        LOG.debug("request={}", request);
         if ((request.zxid & 0xffffffffL) != 0) {
             pendingTxns.add(request);
         }
+        LOG.debug("pendingTxns={}", pendingTxns);
         syncProcessor.processRequest(request);
     }
 

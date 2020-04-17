@@ -22,7 +22,7 @@ public class MeasureSetDataAsync {
             count++;
             strongSum += result[0];
             weakSum += result[1];
-            if (count % 1000 == 0)
+            if (count % 100 == 0)
                 System.out.printf("STRONG: %.3f ms, WEAK: %.3f ms\n", strongSum / count,
                         weakSum / count);
         }

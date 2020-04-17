@@ -138,19 +138,19 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         public QuorumServer(long id, String hostname,
                             Integer port, Integer electionPort,
                             LearnerType type) {
-	    this.id = id;
-	    this.hostname=hostname;
-	    if (port!=null){
+            this.id = id;
+            this.hostname=hostname;
+            if (port!=null){
                 this.port=port;
-	    }
-	    if (electionPort!=null){
+            }
+            if (electionPort!=null){
                 this.electionPort=electionPort;
-	    }
-	    if (type!=null){
+            }
+            if (type!=null){
                 this.type = type;
-	    }
-	    this.recreateSocketAddresses();
-	}
+            }
+            this.recreateSocketAddresses();
+        }
 
         /**
          * Performs a DNS lookup of hostname and (re)creates the this.addr and

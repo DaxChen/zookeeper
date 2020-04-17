@@ -84,8 +84,133 @@ public class FinalRequestProcessor implements RequestProcessor {
         this.zks = zks;
     }
 
-    public void processRequest(Request request) {
+    public void respondWeak(Request request) {
         if (LOG.isDebugEnabled()) {
+            LOG.debug("\u001b[0;31m" + "FinalRP.respondWeak" + "\u001b[m");
+        }
+
+        ServerCnxn cnxn = request.cnxn;
+
+        String lastOp = "NA";
+        zks.decInProcess();
+        Code err = Code.OK;
+        Record rsp = null;
+        try {
+            if (request.hdr != null && request.hdr.getType() == OpCode.error) {
+                throw KeeperException.create(KeeperException.Code.get((
+                        (ErrorTxn) request.txn).getErr()));
+            }
+
+            KeeperException ke = request.getException();
+            if (ke != null && request.type != OpCode.multi) {
+                throw ke;
+            }
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("{}",request);
+            }
+            switch (request.type) {
+            case OpCode.setData: {
+                lastOp = "SETD";
+                rsp = new SetDataResponse(new Stat());
+                break;
+            }
+            }
+        } catch (SessionMovedException e) {
+            // session moved is a connection level error, we need to tear
+            // down the connection otw ZOOKEEPER-710 might happen
+            // ie client on slow follower starts to renew session, fails
+            // before this completes, then tries the fast follower (leader)
+            // and is successful, however the initial renew is then 
+            // successfully fwd/processed by the leader and as a result
+            // the client and leader disagree on where the client is most
+            // recently attached (and therefore invalid SESSION MOVED generated)
+            cnxn.sendCloseSession();
+            return;
+        } catch (KeeperException e) {
+            err = e.code();
+        } catch (Exception e) {
+            // log at error level as we are returning a marshalling
+            // error to the user
+            LOG.error("Failed to process " + request, e);
+            StringBuilder sb = new StringBuilder();
+            ByteBuffer bb = request.request;
+            bb.rewind();
+            while (bb.hasRemaining()) {
+                sb.append(Integer.toHexString(bb.get() & 0xff));
+            }
+            LOG.error("Dumping request buffer: 0x" + sb.toString());
+            err = Code.MARSHALLINGERROR;
+        }
+
+        long lastZxid = zks.getZKDatabase().getDataTreeLastProcessedZxid();
+        ReplyHeader hdr =
+            new ReplyHeader(request.cxid, lastZxid, err.intValue());
+
+        zks.serverStats().updateLatency(request.createTime);
+        cnxn.updateStatsForResponse(request.cxid, lastZxid, lastOp,
+                    request.createTime, Time.currentElapsedTime());
+
+        LOG.debug("\u001b[0;31m" + "Sending weak response to client" + "\u001b[m");
+        LOG.debug("Request={}", request);
+        LOG.debug("ReplyHeader={}", hdr);
+        LOG.debug("Response={}", rsp);
+        try {
+            cnxn.sendResponse(hdr, rsp, "response");
+        } catch (IOException e) {
+            LOG.error("FIXMSG",e);
+        }
+    }
+
+    public void processRequestWeak(Request request) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("\u001b[0;31m" + "FinalRP.processRequestWeak" + "\u001b[m");
+            LOG.debug("Processing request:: " + request);
+        }
+        // request.addRQRec(">final");
+        long traceMask = ZooTrace.CLIENT_REQUEST_TRACE_MASK;
+        if (request.type == OpCode.ping) {
+            traceMask = ZooTrace.SERVER_PING_TRACE_MASK;
+        }
+        if (LOG.isTraceEnabled()) {
+            ZooTrace.logRequest(LOG, traceMask, 'E', request, "");
+        }
+        ProcessTxnResult rc = null;
+        synchronized (zks.outstandingChanges) {
+            while (!zks.outstandingChanges.isEmpty()
+                    && zks.outstandingChanges.get(0).zxid <= request.zxid) {
+                ChangeRecord cr = zks.outstandingChanges.remove(0);
+                if (cr.zxid < request.zxid) {
+                    LOG.warn("Zxid outstanding "
+                            + cr.zxid
+                            + " is less than current " + request.zxid);
+                }
+                if (zks.outstandingChangesForPath.get(cr.path) == cr) {
+                    zks.outstandingChangesForPath.remove(cr.path);
+                }
+            }
+            if (request.hdr != null) {
+               TxnHeader hdr = request.hdr;
+               Record txn = request.txn;
+
+               rc = zks.processTxn(hdr, txn);
+            }
+            // do not add non quorum packets to the queue.
+            if (Request.isQuorum(request.type)) {
+                zks.getZKDatabase().addCommittedProposal(request);
+            }
+        }
+        LOG.debug("\u001b[0;31m" + "done processing weak, ProcessTxnResult={}" + "\u001b[m", rc);
+    }
+
+    public void processRequest(Request request) {
+        if (request.respondedWeakly) {
+            processRequestWeak(request);
+            return;
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("\u001b[0;31m" + "FinalRP.pr" + "\u001b[m");
             LOG.debug("Processing request:: " + request);
         }
         // request.addRQRec(">final");
@@ -388,6 +513,10 @@ public class FinalRequestProcessor implements RequestProcessor {
         cnxn.updateStatsForResponse(request.cxid, lastZxid, lastOp,
                     request.createTime, Time.currentElapsedTime());
 
+        LOG.debug("\u001b[0;31m" + "Sending response to client" + "\u001b[m");
+        LOG.debug("Request={}", request);
+        LOG.debug("ReplyHeader={}", hdr);
+        LOG.debug("Response={}", rsp);
         try {
             cnxn.sendResponse(hdr, rsp, "response");
             if (closeSession) {
