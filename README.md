@@ -43,3 +43,7 @@ cd bin
 4. User Libraries -> User Libraries... -> new -> name:zookeeper-cs739
 5. Add external JARs... -> add build/zookeeper-3.4.12.jar & all jars in build/lib
 6. Now you can import zookeeper in your java code
+
+## Benchmark in MongoDB
+Performance entanglement on another system, apply multi-consistency and see if weak request is faster than strong
+https://github.com/wu0607/MongoDB-benchmark
