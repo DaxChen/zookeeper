@@ -115,6 +115,7 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
                         p.createBB();
                     }
                     sock.write(p.bb);
+                    LOG.debug("----- packet is written to socket in ClientCnxnSocketNIO.doIO -----");
                     if (!p.bb.hasRemaining()) {
                         sentCount++;
                         outgoingQueue.removeFirstOccurrence(p);
@@ -362,6 +363,8 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
                     updateLastSendAndHeard();
                     sendThread.primeConnection();
                 }
+            // consider each selectionKey is a channel to a server, if a server is ready and we can
+            // write to the channel, then we start doIO
             } else if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {
                 doIO(pendingQueue, outgoingQueue, cnxn);
             }

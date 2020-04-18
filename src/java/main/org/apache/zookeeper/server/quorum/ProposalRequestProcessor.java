@@ -61,10 +61,10 @@ public class ProposalRequestProcessor implements RequestProcessor {
                 
         
         /* In the following IF-THEN-ELSE block, we process syncs on the leader. 
-         * If the sync is coming from a follower, then the follower
-         * handler adds it to syncHandler. Otherwise, if it is a client of
-         * the leader that issued the sync command, then syncHandler won't 
-         * contain the handler. In this case, we add it to syncHandler, and 
+         * If the sync is coming from a follower, then the follower handler adds it to syncHandler. 
+         * 
+         * Otherwise, if it is a client of the leader that issued the sync command, then 
+         * syncHandler won't contain the handler. In this case, we add it to syncHandler, and 
          * call processRequest on the next processor.
          */
         
@@ -75,11 +75,11 @@ public class ProposalRequestProcessor implements RequestProcessor {
             if (request.hdr != null) {
                 // We need to sync and get consensus on any transactions
                 try {
-                    zks.getLeader().propose(request);
+                    zks.getLeader().propose(request); // leader.java creates a proposal and send it out to all the members
                 } catch (XidRolloverException e) {
                     throw new RequestProcessorException(e.getMessage(), e);
                 }
-                syncProcessor.processRequest(request);
+                syncProcessor.processRequest(request); // add(request) to queuedRequests 
             }
         }
     }

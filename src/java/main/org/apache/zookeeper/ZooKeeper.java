@@ -1312,7 +1312,8 @@ public class ZooKeeper {
      */
     public Stat setData(final String path, byte data[], int version)
         throws KeeperException, InterruptedException
-    {
+    {		
+    		LOG.debug("----- ZooKeeper.setData() path: " + path + " -----");
         final String clientPath = path;
         PathUtils.validatePath(clientPath);
 

@@ -1040,6 +1040,8 @@ public class ClientCnxn {
             long lastPingRwServer = Time.currentElapsedTime();
             final int MAX_SEND_PING_INTERVAL = 10000; //10 seconds
             InetSocketAddress serverAddress = null;
+            
+            // a sendThread is created when a ZooKeeper is initialized, and this sendThread start() immediately 
             while (state.isAlive()) {
                 try {
                     if (!clientCnxnSocket.isConnected()) {
@@ -1140,7 +1142,9 @@ public class ClientCnxn {
                         }
                         to = Math.min(to, pingRwTimeout - idlePingRwServer);
                     }
-
+                    
+                    // in this sendThread while loop, we finally start transporting our request to server
+                    LOG.debug("----- ClientCnxn.run() -> doTransport -----");
                     clientCnxnSocket.doTransport(to, pendingQueue, outgoingQueue, ClientCnxn.this);
                 } catch (Throwable e) {
                     if (closing) {

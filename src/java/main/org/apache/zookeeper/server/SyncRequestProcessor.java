@@ -166,7 +166,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                         // flushes (writes), then just pass this to the next
                         // processor
                         if (nextProcessor != null) {
-                            nextProcessor.processRequest(si);
+                            nextProcessor.processRequest(si); // send Ack to leader or follower
                             if (nextProcessor instanceof Flushable) {
                                 ((Flushable)nextProcessor).flush();
                             }

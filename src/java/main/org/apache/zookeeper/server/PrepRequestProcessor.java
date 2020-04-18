@@ -69,6 +69,7 @@ import org.apache.zookeeper.txn.CheckVersionTxn;
 import org.apache.zookeeper.txn.Txn;
 import org.apache.zookeeper.txn.MultiTxn;
 import org.apache.zookeeper.txn.TxnHeader;
+//import org.apache.zookeeper.proto.ReplyHeader;
 
 /**
  * This request processor is generally at the start of a RequestProcessor
@@ -323,12 +324,12 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
 
         switch (type) {
             case OpCode.create:
-            		System.out.println("====== PrepRequestProcessor create case ======");
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 CreateRequest createRequest = (CreateRequest)record;   
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, createRequest);
                 String path = createRequest.getPath();
+                LOG.debug("===== PrepRequestProcessor OpCode.create " + zxid + " " + path + " =====");
                 int lastSlash = path.lastIndexOf('/');
                 if (lastSlash == -1 || path.indexOf('\0') != -1 || failCreate) {
                     LOG.info("Invalid path " + path + " with session 0x" +
@@ -379,7 +380,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                         0, listACL));
                 break;
             case OpCode.delete:
-            		System.out.println("====== PrepRequestProcessor delete case ======");
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 DeleteRequest deleteRequest = (DeleteRequest)record;
                 if(deserialize)
@@ -411,13 +411,14 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                         null, -1, null));
                 break;
             case OpCode.setData:
-            		System.out.println("====== PrepRequestProcessor setData case ======");
+            		
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 SetDataRequest setDataRequest = (SetDataRequest)record;
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, setDataRequest);
                 path = setDataRequest.getPath();
                 request.userDataPath = path; // update node path
+                LOG.debug("===== PrepRequestProcessor OpCode.setData " + zxid + " " + path + " =====");
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
                 checkACL(zks, nodeRecord.acl, ZooDefs.Perms.WRITE,
@@ -434,7 +435,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 addChangeRecord(nodeRecord);
                 break;
             case OpCode.setACL:
-            		System.out.println("====== PrepRequestProcessor setACL case ======");
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 SetACLRequest setAclRequest = (SetACLRequest)record;
                 if(deserialize)
@@ -461,7 +461,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 addChangeRecord(nodeRecord);
                 break;
             case OpCode.createSession:
-            		System.out.println("====== PrepRequestProcessor createSession case ======");
                 request.request.rewind();
                 int to = request.request.getInt();
                 request.txn = new CreateSessionTxn(to);
@@ -470,7 +469,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 zks.setOwner(request.sessionId, request.getOwner());
                 break;
             case OpCode.closeSession:
-            		System.out.println("====== PrepRequestProcessor closeSession case ======");
                 // We don't want to do this check since the session expiration thread
                 // queues up this operation without being the session owner.
                 // this request is the last of the session so it should be ok
@@ -498,7 +496,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                         + Long.toHexString(request.sessionId));
                 break;
             case OpCode.check:
-            		System.out.println("====== PrepRequestProcessor check case ======");
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 CheckVersionRequest checkVersionRequest = (CheckVersionRequest)record;
                 if(deserialize)
@@ -556,7 +553,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 pRequest2Txn(request.type, zks.getNextZxid(), request, deleteRequest, true);
                 break;
             case OpCode.setData:
-                SetDataRequest setDataRequest = new SetDataRequest();                
+                SetDataRequest setDataRequest = new SetDataRequest();
                 pRequest2Txn(request.type, zks.getNextZxid(), request, setDataRequest, true);
                 break;
             case OpCode.setACL:
