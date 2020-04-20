@@ -64,11 +64,15 @@ public class MeasureSetDataStrongWeak {
 //        zk.create("/1", "strong".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 //        zk.create("/2", "weak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 
-//        Thread measureStrongThread = new Thread(measureStrong);
-        Thread measureWeakThread = new Thread(measureWeak);
+//        Thread measureStrongThread1 = new Thread(measureStrong);
+//        Thread measureStrongThread2 = new Thread(measureStrong);
+        Thread measureWeakThread1 = new Thread(measureWeak);
+        Thread measureWeakThread2 = new Thread(measureWeak);
 
-//        measureStrongThread.start();
-        measureWeakThread.start();
+//        measureStrongThread1.start();
+//        measureStrongThread2.start();
+        measureWeakThread1.start();
+        measureWeakThread2.start();
     }
 
     /**

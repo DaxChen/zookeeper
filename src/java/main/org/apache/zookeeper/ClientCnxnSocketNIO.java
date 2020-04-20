@@ -115,7 +115,6 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
                         p.createBB();
                     }
                     sock.write(p.bb);
-                    LOG.debug("----- packet is written to socket in ClientCnxnSocketNIO.doIO -----");
                     if (!p.bb.hasRemaining()) {
                         sentCount++;
                         outgoingQueue.removeFirstOccurrence(p);

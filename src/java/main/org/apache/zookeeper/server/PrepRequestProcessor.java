@@ -329,7 +329,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, createRequest);
                 String path = createRequest.getPath();
-                LOG.debug("===== PrepRequestProcessor OpCode.create " + zxid + " " + path + " =====");
                 int lastSlash = path.lastIndexOf('/');
                 if (lastSlash == -1 || path.indexOf('\0') != -1 || failCreate) {
                     LOG.info("Invalid path " + path + " with session 0x" +
@@ -418,7 +417,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     ByteBufferInputStream.byteBuffer2Record(request.request, setDataRequest);
                 path = setDataRequest.getPath();
                 request.userDataPath = path; // update node path
-                LOG.debug("===== PrepRequestProcessor OpCode.setData " + zxid + " " + path + " =====");
+//                LOG.debug("===== PrepRequestProcessor OpCode.setData " + zxid + " " + path + " =====");
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
                 checkACL(zks, nodeRecord.acl, ZooDefs.Perms.WRITE,

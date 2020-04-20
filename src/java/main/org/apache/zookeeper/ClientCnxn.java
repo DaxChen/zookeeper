@@ -1144,7 +1144,6 @@ public class ClientCnxn {
                     }
                     
                     // in this sendThread while loop, we finally start transporting our request to server
-                    LOG.debug("----- ClientCnxn.run() -> doTransport -----");
                     clientCnxnSocket.doTransport(to, pendingQueue, outgoingQueue, ClientCnxn.this);
                 } catch (Throwable e) {
                     if (closing) {

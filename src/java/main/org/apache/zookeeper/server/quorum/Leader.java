@@ -565,7 +565,7 @@ public class Leader {
      * @param followerAddr
      */
     synchronized public void processAck(long sid, long zxid, SocketAddress followerAddr) {
-    		LOG.info("===== server id " + sid + ", zxid " + zxid + " =====");
+//    		LOG.info("===== server id " + sid + ", zxid " + zxid + " =====");
 //        LocalTime time1 = LocalTime.now();
         
         if (LOG.isTraceEnabled()) {
@@ -621,7 +621,7 @@ public class Leader {
         if (p.request.userDataPath != null && p.request.userDataPath.charAt(1) == '2' && !blockedWeakZxids.contains(zxid)) {
         	// block the weak proposal when its zxid != lastCommitted + 1
         	if (zxid != lastCommitted + 1) {
-            LOG.info("===== Weak zxid " + zxid + " != lastCommitted + 1" + (lastCommitted + 1));
+//            LOG.info("===== Weak zxid " + zxid + " != lastCommitted + 1" + (lastCommitted + 1));
             
             // the weak proposal is blocked from committing until the lastCommitted+1 is committed
             blockedWeakZxids.add(zxid);
@@ -636,7 +636,7 @@ public class Leader {
           // currently, we assume that the communication between leader and follower is in order, 
           // so "proposal->commit" guarantees sync will be done earlier than commit
         	} else {
-        		LOG.info("===== Weak commit zxid " + zxid + " =====");
+//        		LOG.info("===== Weak commit zxid " + zxid + " =====");
         		outstandingProposals.remove(zxid);
             if (p.request != null) {
                 toBeApplied.add(p);
@@ -656,7 +656,7 @@ public class Leader {
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
                 for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+//                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                     sendSync(r);
                 }
             }
@@ -688,7 +688,7 @@ public class Leader {
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
                 for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+//                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                     sendSync(r);
                 }
             }
@@ -705,7 +705,7 @@ public class Leader {
                 zk.commitProcessor.commit(weakP.request);
                 if(pendingSyncs.containsKey(zxid)){
                     for(LearnerSyncRequest r: pendingSyncs.remove(weakZxid)) {
-                        System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+//                        System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                         sendSync(r);
                     }
                 }
