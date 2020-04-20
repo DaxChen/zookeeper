@@ -307,7 +307,7 @@ public class Leader {
     ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
     
     
-    ConcurrentMap<Long, List<Proposal>> blockedWeakProposals = new ConcurrentHashMap<Long, List<Proposal>>();
+    ConcurrentMap<Long, Proposal> blockedWeakProposals = new ConcurrentHashMap<Long, Proposal>();
     Set<Long> blockedWeakZxids = new HashSet<>();
     
 
@@ -565,8 +565,7 @@ public class Leader {
      * @param followerAddr
      */
     synchronized public void processAck(long sid, long zxid, SocketAddress followerAddr) {
-//    		LOG.info("===== server id " + sid + ", zxid " + zxid + " =====");
-//        LocalTime time1 = LocalTime.now();
+    		// LOG.info("===== server id " + sid + ", zxid " + zxid + " =====");
         
         if (LOG.isTraceEnabled()) {
             LOG.trace("Ack zxid: 0x{}", Long.toHexString(zxid));
@@ -621,13 +620,11 @@ public class Leader {
         if (p.request.userDataPath != null && p.request.userDataPath.charAt(1) == '2' && !blockedWeakZxids.contains(zxid)) {
         	// block the weak proposal when its zxid != lastCommitted + 1
         	if (zxid != lastCommitted + 1) {
-//            LOG.info("===== Weak zxid " + zxid + " != lastCommitted + 1" + (lastCommitted + 1));
+            // LOG.info("===== Weak zxid " + zxid + " != lastCommitted + 1" + (lastCommitted + 1));
             
             // the weak proposal is blocked from committing until the lastCommitted+1 is committed
             blockedWeakZxids.add(zxid);
-            List<Proposal> list = blockedWeakProposals.getOrDefault(lastCommitted + 1, new LinkedList<Proposal>());
-            list.add(p);
-            blockedWeakProposals.put(lastCommitted + 1, list);
+            blockedWeakProposals.put(zxid, p);
             return;
           // commit the weak proposal since there is no request before it
           // note that a zxid are sync and ack by majority, and there is a situation that a server
@@ -636,7 +633,7 @@ public class Leader {
           // currently, we assume that the communication between leader and follower is in order, 
           // so "proposal->commit" guarantees sync will be done earlier than commit
         	} else {
-//        		LOG.info("===== Weak commit zxid " + zxid + " =====");
+        		// LOG.info("===== Weak commit zxid " + zxid + " =====");
         		outstandingProposals.remove(zxid);
             if (p.request != null) {
                 toBeApplied.add(p);
@@ -655,10 +652,10 @@ public class Leader {
             
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
-                for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-//                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
-                    sendSync(r);
-                }
+              for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
+                  // System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+                  sendSync(r);
+              }
             }
             return;
         	}
@@ -688,41 +685,32 @@ public class Leader {
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
                 for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-//                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+                    // System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                     sendSync(r);
                 }
             }
             
             
             // when a strong request is committed, commit weak requests blocked by the strong
-            if (blockedWeakProposals.containsKey(zxid)) {
-            	for (Proposal weakP: blockedWeakProposals.get(zxid)) {
-            		Long weakZxid = weakP.request.zxid;
-            		blockedWeakZxids.remove(weakZxid);
-            		
-            		commit(weakZxid);
-                inform(weakP);
-                zk.commitProcessor.commit(weakP.request);
-                if(pendingSyncs.containsKey(zxid)){
-                    for(LearnerSyncRequest r: pendingSyncs.remove(weakZxid)) {
-//                        System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
-                        sendSync(r);
-                    }
+            Long weakZxid = zxid + 1;
+            while (blockedWeakProposals.containsKey(weakZxid)) {
+            	Proposal weakP = blockedWeakProposals.get(weakZxid);
+          		
+          		commit(weakZxid);
+              inform(weakP);
+              zk.commitProcessor.commit(weakP.request);
+              if (pendingSyncs.containsKey(zxid)) {
+                for(LearnerSyncRequest r: pendingSyncs.remove(weakZxid)) {
+                  // System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+                  sendSync(r);
                 }
-            	}
-            	blockedWeakProposals.remove(zxid);
-            }
-        }
-      	
-//        LocalTime time2 = LocalTime.now();
-//        Duration duration = Duration.between(time1, time2); // seconds
-//        LOG.info("[Debug] processAck ends");
-//        System.out.println("[Debug]request: "+ p.request);
-//        if(p.request.type == OpCode.setData){
-//            System.out.println("[Debug] p.request with type setData"); 
-//            System.out.println("[Debug] setData processRequest time: " + duration); 
-//        }
-        
+              }
+              
+              weakZxid++;
+              blockedWeakProposals.remove(weakZxid);
+              blockedWeakZxids.remove(weakZxid);
+          	}
+      	}
     }
 
     static class ToBeAppliedRequestProcessor implements RequestProcessor {
