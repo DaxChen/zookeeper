@@ -15,7 +15,9 @@ do
   case $opt in
     'MeasureSetDataStrongWeak'| \
     'MeasureSetDataAsync')
-      java -cp "./bin:../../build/zookeeper-3.4.12.jar:../../build/lib/*" performancemeasure.$opt
+      echo "running command:"
+      echo "java -cp \"./bin:../../build/zookeeper-3.4.12.jar:../../build/lib/*\" performancemeasure.$opt $@"
+      java -cp "./bin:../../build/zookeeper-3.4.12.jar:../../build/lib/*" performancemeasure.$opt $@
       break
       ;;
     'Quit')
@@ -25,4 +27,3 @@ do
     *) echo "Invalid option.. $REPLY try again";;
   esac
 done
-
