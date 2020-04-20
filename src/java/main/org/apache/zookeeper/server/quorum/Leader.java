@@ -640,7 +640,7 @@ public class Leader {
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
                 for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+                    LOG.debug("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                     sendSync(r);
                 }
             }
@@ -650,10 +650,10 @@ public class Leader {
         }
         LocalTime time2 = LocalTime.now();
         Duration duration = Duration.between(time1, time2); // seconds
-        LOG.info("[Debug] processAck ends, request={}", p.request);
+        LOG.debug("[Debug] processAck ends, request={}", p.request);
         if(p.request.type == OpCode.setData){
-            System.out.println("[Debug] p.request with type setData"); 
-            System.out.println("[Debug] setData processRequest time: " + duration); 
+            LOG.debug("[Debug] p.request with type setData"); 
+            LOG.debug("[Debug] setData processRequest time: " + duration); 
         }
         
     }

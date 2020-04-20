@@ -44,7 +44,7 @@ class AckRequestProcessor implements RequestProcessor {
         QuorumPeer self = leader.self;
         if(self != null){
             LOG.debug("\u001b[0;31m" + "AckRP.pr" + "\u001b[m ");
-            LOG.info("[Debug] Leader.REQUEST, leader directly processRequest");
+            LOG.debug("[Debug] Leader.REQUEST, leader directly processRequest");
             leader.processAck(self.getId(), request.zxid, null);
         }else{
             LOG.error("Null QuorumPeer");
