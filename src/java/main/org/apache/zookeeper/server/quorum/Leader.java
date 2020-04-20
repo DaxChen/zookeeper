@@ -610,16 +610,6 @@ public class Leader {
                     Long.toHexString(zxid), p.ackSet.size());
         }
         
-        if (p.request.userDataPath != null && p.request.userDataPath.startsWith("/2")) {
-            // short circuit weak case
-            LOG.debug("\u001b[0;31m" + "Leader.processAck got weak case" + "\u001b[m");
-            if (!p.request.respondedWeakly) {
-                p.request.respondedWeakly = true;
-                LOG.debug("\u001b[0;31m" + "first time weak, calling finalProcessor" + "\u001b[m");
-                zk.finalProcessor.respondWeak(p.request);
-            }
-        }
-        
         if (self.getQuorumVerifier().containsQuorum(p.ackSet)) { 
             if (zxid != lastCommitted+1) {
                 LOG.warn("Commiting zxid 0x{} from {} not first!",

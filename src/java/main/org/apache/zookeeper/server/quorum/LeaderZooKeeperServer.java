@@ -40,7 +40,7 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
  */
 public class LeaderZooKeeperServer extends QuorumZooKeeperServer {
     CommitProcessor commitProcessor;
-    FinalRequestProcessor finalProcessor;
+    public FinalRequestProcessor finalProcessor;
 
     /**
      * @param port
