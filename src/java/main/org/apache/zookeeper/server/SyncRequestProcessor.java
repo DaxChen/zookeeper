@@ -140,6 +140,8 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                 }
                 
                 if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null && si.userDataPath.charAt(1) != '2') {
+                    // LOG.warn("I'm leader haha!!");
+                    // System.out.println("I'm leader haha!!");
                 	FileTxnLog.forceSyncWS = true;
                 }
                 
