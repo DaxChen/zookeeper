@@ -128,7 +128,8 @@ public class FileTxnLog implements TxnLog {
     volatile FileOutputStream fos = null;
 
     File logDir;
-    private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");;
+    public static boolean forceSyncWS = false;
+    // public static boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");;
     long dbId;
     private LinkedList<FileOutputStream> streamsToFlush =
         new LinkedList<FileOutputStream>();
@@ -367,7 +368,7 @@ public class FileTxnLog implements TxnLog {
         }
         for (FileOutputStream log : streamsToFlush) {
             log.flush();
-            if (forceSync) {
+            if (forceSyncWS) {
                 long startSyncNS = System.nanoTime();
 
                 log.getChannel().force(false);
@@ -386,6 +387,7 @@ public class FileTxnLog implements TxnLog {
         while (streamsToFlush.size() > 1) {
             streamsToFlush.removeFirst().close();
         }
+        forceSyncWS = false;
     }
 
     /**
@@ -470,7 +472,7 @@ public class FileTxnLog implements TxnLog {
      * @return the forceSync value
      */
     public boolean isForceSync() {
-        return forceSync;
+        return forceSyncWS;
     }
 
     /**

@@ -28,7 +28,7 @@ import org.apache.zookeeper.txn.TxnHeader;
  *
  */
 public interface TxnLog {
-    
+		
     /**
      * roll the current
      * log being appended to

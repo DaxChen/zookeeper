@@ -75,6 +75,9 @@ public class ByteBufferInputStream extends InputStream {
     static public void byteBuffer2Record(ByteBuffer bb, Record record)
             throws IOException {
         BinaryInputArchive ia;
+        if (bb == null) {
+        	System.out.println("fuck");
+        }
         ia = BinaryInputArchive.getArchive(new ByteBufferInputStream(bb));
         record.deserialize(ia, "request");
     }

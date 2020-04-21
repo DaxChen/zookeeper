@@ -24,9 +24,12 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.zookeeper.ZooDefs.OpCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.zookeeper.proto.SetDataRequest;
+import org.apache.zookeeper.server.persistence.FileTxnLog;
 /**
  * This RequestProcessor logs requests to disk. It batches the requests to do
  * the io efficiently. The request is not passed to the next RequestProcessor
@@ -46,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SyncRequestProcessor extends ZooKeeperCriticalThread implements RequestProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(SyncRequestProcessor.class);
-    private final ZooKeeperServer zks;
+    private ZooKeeperServer zks; //final
     private final LinkedBlockingQueue<Request> queuedRequests =
         new LinkedBlockingQueue<Request>();
     private final RequestProcessor nextProcessor;
@@ -123,23 +126,34 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
             setRandRoll(r.nextInt(snapCount/2));
             while (true) {
                 Request si = null;
+                // toFlush = Transactions that have been written and are waiting to be flushed to disk 
+                // queuedRequests = requests that waiting to sync
                 if (toFlush.isEmpty()) {
-                    si = queuedRequests.take();
+                    si = queuedRequests.take(); 
                 } else {
-                    si = queuedRequests.poll();
+                    si = queuedRequests.poll(); 
                     if (si == null) {
                         flush(toFlush);
                         continue;
                     }
                 }
+                
+                if (zks.getServerId() == 3 && si.userDataPath != null && si.userDataPath.charAt(1) != '2') {
+                	FileTxnLog.forceSyncWS = true;
+                }
+                
+                // requestOfDeath = a shut down request
                 if (si == requestOfDeath) {
                     break;
                 }
+                
                 if (si != null) {
                     // track the number of records written to the log
                     if (zks.getZKDatabase().append(si)) {
                         logCount++;
+                        // snapCount = the number of log entries to log before starting a snapshot
                         if (logCount > (snapCount / 2 + randRoll)) {
+                        	  // the number of log entries before rolling the log, number is chosen randomly
                             setRandRoll(r.nextInt(snapCount/2));
                             // roll the log
                             zks.getZKDatabase().rollLog();
@@ -173,6 +187,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                         }
                         continue;
                     }
+                    
                     toFlush.add(si);
                     if (toFlush.size() > 1000) {
                         flush(toFlush);

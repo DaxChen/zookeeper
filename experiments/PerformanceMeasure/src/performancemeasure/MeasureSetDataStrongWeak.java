@@ -2,8 +2,11 @@ package performancemeasure;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
 public class MeasureSetDataStrongWeak {
@@ -42,7 +45,10 @@ public class MeasureSetDataStrongWeak {
 
     public static void main(String[] args)
             throws IOException, KeeperException, InterruptedException {
-
+//    		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
+//    		zk.create("/1", "strong".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+//      	zk.create("/2", "weak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    		
         for (String path : args) {
             System.out.println("starting thread for path: " + path);
             Runnable r = new MyRunnable(path, new ZooKeeper("localhost:2183", 5000, null));

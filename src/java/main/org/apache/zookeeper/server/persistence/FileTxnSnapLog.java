@@ -52,7 +52,7 @@ public class FileTxnSnapLog {
     //the directory containing the
     //the snapshot directory
     private final File snapDir;
-    private TxnLog txnLog;
+    public TxnLog txnLog;
     private SnapShot snapLog;
     public final static int VERSION = 2;
     public final static String version = "version-";
