@@ -45,13 +45,14 @@ public class MeasureSetDataStrongWeak {
 
     public static void main(String[] args)
             throws IOException, KeeperException, InterruptedException {
-//    		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
-//    		zk.create("/1", "strong".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-//      	zk.create("/2", "weak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
+    		zk.create("/1", "strong".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      	zk.create("/2", "weak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     		
         for (String path : args) {
             System.out.println("starting thread for path: " + path);
-            Runnable r = new MyRunnable(path, new ZooKeeper("localhost:2183", 5000, null));
+            //"localhost:2183" "10.10.1.2:2183"
+            Runnable r = new MyRunnable(path, new ZooKeeper("10.10.1.2:2183", 5000, null));
             new Thread(r).start();
         }
     }
