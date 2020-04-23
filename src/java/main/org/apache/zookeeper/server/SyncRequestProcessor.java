@@ -120,6 +120,9 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
     @Override
     public void run() {
         try {
+        	if (!(zks instanceof LeaderZooKeeperServer)) {
+        		FileTxnLog.forceSyncWS = true;
+        	}
             int logCount = 0;
 
             // we do this in an attempt to ensure that not all of the servers
@@ -210,7 +213,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
         if (toFlush.isEmpty())
             return;
 
-        zks.getZKDatabase().commit();
+        zks.getZKDatabase().commit(zks instanceof LeaderZooKeeperServer);
         while (!toFlush.isEmpty()) {
             Request i = toFlush.remove();
             if (nextProcessor != null) {
