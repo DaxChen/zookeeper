@@ -65,10 +65,10 @@ public class Measure {
 
   public static void main(String[] args) 
   		throws IOException, KeeperException, InterruptedException {
-		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
+//		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
 //		zk.create("/1", "strong0".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 //  	zk.create("/2", "weak000".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-  	zk.create("/3", "midweak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+//  	zk.create("/3", "midweak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     
   	String hostPort = "10.10.1.2:2181"; // "10.10.1.2:2181" // "localhost:2181"
   	
