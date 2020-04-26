@@ -35,11 +35,14 @@ public class Measure {
           
           ++count;
           durationSum += (end - start) / 1000000.0;
+          if (count % 10000 == 0) {
+          	System.out.println("warmup: [" + path + "] " + durationSum / count + " ms");
+          }
         } catch (KeeperException|InterruptedException e) {
             e.printStackTrace();
         }
       }
-      System.out.println("warmup: [" + path + "] " + durationSum / count + " ms");
+      System.out.println("final warmup: [" + path + "] " + durationSum / count + " ms");
       
       // 3 min measurement
       durationSum = 0;
@@ -53,11 +56,14 @@ public class Measure {
 
           ++count;
           durationSum += (end - start) / 1000000.0;
+          if (count % 10000 == 0) {
+          	System.out.println("measure: [" + path + "] " + durationSum / count + " ms");
+          }
         } catch (KeeperException|InterruptedException e) {
             e.printStackTrace();
         }
       }
-      System.out.println("measure: [" + path + "] " + durationSum / count + " ms");
+      System.out.println("final measure: [" + path + "] " + durationSum / count + " ms");
       
       avgLatency = durationSum / count;
     }
