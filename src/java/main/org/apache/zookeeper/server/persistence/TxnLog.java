@@ -81,7 +81,7 @@ public interface TxnLog {
      * they are persisted
      * @throws IOException
      */
-    void commit() throws IOException;
+    void commit(boolean isLeader) throws IOException;
    
     /** 
      * close the transactions logs

@@ -362,7 +362,7 @@ public class FileTxnLog implements TxnLog {
      * commit the logs. make sure that evertyhing hits the
      * disk
      */
-    public synchronized void commit() throws IOException {
+    public synchronized void commit(boolean isLeader) throws IOException {
         if (logStream != null) {
             logStream.flush();
         }
@@ -387,7 +387,10 @@ public class FileTxnLog implements TxnLog {
         while (streamsToFlush.size() > 1) {
             streamsToFlush.removeFirst().close();
         }
-        forceSyncWS = false;
+        
+        if (isLeader) {
+        	forceSyncWS = false;
+        }   
     }
 
     /**

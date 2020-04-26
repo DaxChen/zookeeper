@@ -494,8 +494,8 @@ public class ZKDatabase {
      * commit to the underlying transaction log
      * @throws IOException
      */
-    public void commit() throws IOException {
-        this.snapLog.commit();
+    public void commit(boolean isLeader) throws IOException {
+        this.snapLog.commit(isLeader);
     }
     
     /**

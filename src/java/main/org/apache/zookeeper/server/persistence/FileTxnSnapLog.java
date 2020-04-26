@@ -376,8 +376,8 @@ public class FileTxnSnapLog {
      * commit the transaction of logs
      * @throws IOException
      */
-    public void commit() throws IOException {
-        txnLog.commit();
+    public void commit(boolean isLeader) throws IOException {
+        txnLog.commit(isLeader);
     }
 
     /**
