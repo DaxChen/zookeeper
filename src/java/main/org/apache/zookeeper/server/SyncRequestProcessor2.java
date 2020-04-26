@@ -122,7 +122,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
         try {
         	// for mid-weak consistency, we set all followers' forceSyncWS to false
         	if (!(zks instanceof LeaderZooKeeperServer)) {
-        		FileTxnLog.forceSyncWS = false;
+        		FileTxnLog.forceSyncWS = true;
         	}
             int logCount = 0;
 

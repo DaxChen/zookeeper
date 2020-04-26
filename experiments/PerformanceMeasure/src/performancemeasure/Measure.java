@@ -71,34 +71,38 @@ public class Measure {
 //  	zk.create("/3", "midweak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     
   	String hostPort = "10.10.1.2:2181"; // "10.10.1.2:2181" // "localhost:2181"
-  	String weakLevel = "2";
   	
 		// strong vs. weak paths 6s, 5s1w, ..., 1s5w, 6w
-  	for (int numWeak = 0; numWeak <= 6; numWeak++) {
-  		StringBuilder paths = new StringBuilder();
-  		for (int num = 0; num < numWeak; num++) {
-  			paths.append(weakLevel);
-  		}
-  		for (int num = numWeak; num < 6; num++) {
-  			paths.append("1");
-  		}
-  		
-  		exp(paths.toString(), hostPort);
+  	if (false) {
+  		String weakLevel = "2";
+    	for (int numWeak = 0; numWeak <= 6; numWeak++) {
+    		StringBuilder paths = new StringBuilder();
+    		for (int num = 0; num < numWeak; num++) {
+    			paths.append(weakLevel);
+    		}
+    		for (int num = numWeak; num < 6; num++) {
+    			paths.append("1");
+    		}
+    		
+    		exp(paths.toString(), hostPort);
+    	}
   	}
   	
   	// strong vs. midweak paths 6s, 5s1w, ..., 1s5w, 6w
-//  	String weakLevel = "3";
-//   	for (int numWeak = 0; numWeak <= 6; numWeak++) {
-//   		StringBuilder paths = new StringBuilder();
-//   		for (int num = 0; num < numWeak; num++) {
-//   			paths.append(weakLevel);
-//   		}
-//   		for (int num = numWeak; num < 6; num++) {
-//   			paths.append("1");
-//   		}
-//   		
-//   		exp(paths.toString(), hostPort);
-//   	}
+  	if (true) {
+  		String weakLevel = "3";
+     	for (int numWeak = 0; numWeak <= 6; numWeak++) {
+     		StringBuilder paths = new StringBuilder();
+     		for (int num = 0; num < numWeak; num++) {
+     			paths.append(weakLevel);
+     		}
+     		for (int num = numWeak; num < 6; num++) {
+     			paths.append("1");
+     		}
+     		
+     		exp(paths.toString(), hostPort);
+     	}
+  	}
   }
   
   public static void exp(String paths, String hostPort) 
