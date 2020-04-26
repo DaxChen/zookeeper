@@ -120,6 +120,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
     @Override
     public void run() {
         try {
+        	// for mid-weak consistency, we set all followers' forceSyncWS to false
         	if (!(zks instanceof LeaderZooKeeperServer)) {
         		FileTxnLog.forceSyncWS = true;
         	}
@@ -142,9 +143,8 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                     }
                 }
                 
-                if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null && si.userDataPath.charAt(1) != '2') {
-                    // LOG.warn("I'm leader haha!!");
-                    // System.out.println("I'm leader haha!!");
+                if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null 
+                		&& (si.userDataPath.charAt(1) != '2' || si.userDataPath.charAt(1) != '3')) {
                 	FileTxnLog.forceSyncWS = true;
                 }
                 
