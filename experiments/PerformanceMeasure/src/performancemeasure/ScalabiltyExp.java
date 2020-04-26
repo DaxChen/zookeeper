@@ -26,6 +26,7 @@ public class ScalabiltyExp {
         Option mode = new Option("m", "mode", true, "read write different loading mode");
         Option numClient = new Option("n", "numClient", true, "number of total clients");
         Option percent = new Option("p", "percent", true, "percent of strong/weak 100=strong-only 0=weak-only");
+        Option percentWrite = new Option("pw", "percentWrite", true, "percent of wrtie/read 100=write-only 0=read-only");
         options.addOption(host);
         options.addOption(zkPath);
         options.addOption(warmup);
@@ -33,6 +34,7 @@ public class ScalabiltyExp {
         options.addOption(mode);
         options.addOption(numClient);
         options.addOption(percent);
+        options.addOption(percentWrite);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -57,6 +59,7 @@ public class ScalabiltyExp {
         int duration;
         int threadIdx;
         int percent;
+        int percentWrite;
         ReentrantLock loglock;
 
         public MyRunnable(CommandLine cmd, ZooKeeper zk, int threadIdx, ReentrantLock loglock) {
@@ -68,6 +71,7 @@ public class ScalabiltyExp {
             this.warmup = Integer.parseInt(cmd.getOptionValue("warmup", "120"));
             this.duration = Integer.parseInt(cmd.getOptionValue("duration", "180"));
             this.percent = Integer.parseInt(cmd.getOptionValue("percent", "100"));
+            this.percentWrite = Integer.parseInt(cmd.getOptionValue("percentWrite", "100"));
         }
 
         public void run() {
@@ -79,7 +83,7 @@ public class ScalabiltyExp {
 
             while (true) {
                 try {
-                    String ops = getOps(this.mode);
+                    String ops = getOps(this.mode, this.percentWrite);
                     String zkPath = getZkPath(this.percent);
 
                     long start, end;
@@ -105,7 +109,8 @@ public class ScalabiltyExp {
                     if (System.nanoTime() > finalTime) { // duration timeout
                         System.out.println("Done Duration [" + String.valueOf(this.percent) + "%] " + durationSum / count + " ms");
                         loglock.lock();
-                        FileWriter myWriter = new FileWriter(String.format("./outputs/exp-%s-%d%%-%d-client", this.mode, this.percent, this.numClient), true);
+                        FileWriter myWriter = new FileWriter(String.format("./outputs/exp-%s-%d%%write-%d%%strong-%d-client", 
+                                                             this.mode, this.percentWrite, this.percent, this.numClient), true);
                         String stat = String.format("Thread - %d , Done [%d%%] total: %d time: %f ms avg lat: %f ms\n",
                                                      this.threadIdx, this.percent, count, durationSum, durationSum / count);
                         myWriter.write(stat);
@@ -120,15 +125,19 @@ public class ScalabiltyExp {
             }
         }
 
-        private String getOps(String ops) {
-            if (ops == "write" || ops == "read") {
+        private String getOps(String ops, Integer percentWrite) {
+            if (ops == "write") {
+                this.percentWrite = 100; // update for log filename
+                return ops;
+            } else if (ops == "read") {
+                this.percentWrite = 0; // update for log filename
                 return ops;
             }
             Random rand = new Random(); 
-            if (rand.nextInt() % 2 == 0) {
-                return "write";
+            if (percentWrite > rand.nextInt(100)) {
+                return "write"; // write
             } else {
-                return "read";
+                return "read"; // read
             }
         }
 
@@ -150,8 +159,8 @@ public class ScalabiltyExp {
     }
     public static void main(String[] args)  throws IOException, KeeperException, InterruptedException, ParseException {
         CommandLine cmd = argparse(args);
-        String setting = String.format("host:%s zkPath:%s warm:%s duration:%s mode:%s numClient:%s", 
-                                        cmd.getOptionValue("host"), cmd.getOptionValue("percent"),
+        String setting = String.format("host:%s strong:%s%% write:%s%% warm:%s duration:%s mode:%s numClient:%s", 
+                                        cmd.getOptionValue("host"), cmd.getOptionValue("percent"), cmd.getOptionValue("percentWrite"),
                                         cmd.getOptionValue("warmup"), cmd.getOptionValue("duration"),
                                         cmd.getOptionValue("mode"), cmd.getOptionValue("numClient"));
         System.out.println(setting);
