@@ -151,9 +151,9 @@ public class ScalabiltyExp {
     public static void main(String[] args)  throws IOException, KeeperException, InterruptedException, ParseException {
         CommandLine cmd = argparse(args);
         String setting = String.format("host:%s zkPath:%s warm:%s duration:%s mode:%s numClient:%s", 
-                                        cmd.getOptionValue("host"), cmd.getOptionValue("zkPath"), 
+                                        cmd.getOptionValue("host"), cmd.getOptionValue("percent"),
                                         cmd.getOptionValue("warmup"), cmd.getOptionValue("duration"),
-                                        cmd.getOptionValue("mode"), cmd.getOptionValue("numClient"), cmd.getOptionValue("percent"));
+                                        cmd.getOptionValue("mode"), cmd.getOptionValue("numClient"));
         System.out.println(setting);
 
         ReentrantLock lock = new ReentrantLock(); // this is for writing stat to log
