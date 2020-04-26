@@ -1,11 +1,12 @@
 #!/bin/bash
 
-DURATION=180
-WARM=120
+DURATION=180  # default 3 mins
+WARM=120      # default 2 mins
+
 CLIENT_NUM=1
-PERCENT=100 # default strong ops
-MODE=write  # default write
 HOST=localhost:2182
+MODE=write   
+PERCENT=100
 
 echo "How many client want to create?"
 read CLIENT_NUM
@@ -17,7 +18,7 @@ echo "Which mode? [write/read/readwrite]"
 read MODE
 echo "Which host? [10.10.1.2:2181]"
 read HOST
-echo "What Percentage Strong? [0-100%]"
+echo "What Percentage Strong? [0-100]"
 read PERCENT
 
 
@@ -30,7 +31,7 @@ echo ""
 mkdir -p outputs
 
 java -cp "./bin:../../build/zookeeper-3.4.12.jar:../../build/lib/*:./packages/*" \
-            performancemeasure.ScalabiltyExp -d $DURATION -w $WARM -z $ZK_PATH -n $CLIENT_NUM -m $MODE -h $HOST -p $PERCENT
+            performancemeasure.ScalabiltyExp -d $DURATION -w $WARM -n $CLIENT_NUM -m $MODE -h $HOST -p $PERCENT
 
 echo "Done writing stat to" ./outputs/exp-$MODE-$PERCENT%-$CLIENT_NUM-client
 

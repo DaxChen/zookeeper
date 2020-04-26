@@ -104,8 +104,8 @@ public class ScalabiltyExp {
                     } 
                     if (System.nanoTime() > finalTime) { // duration timeout
                         System.out.println("Done Duration [" + String.valueOf(this.percent) + "%] " + durationSum / count + " ms");
-                        FileWriter myWriter = new FileWriter(String.format("./outputs/exp-%s-%d%%-%d-client", this.mode, this.percent, this.numClient), true);
                         loglock.lock();
+                        FileWriter myWriter = new FileWriter(String.format("./outputs/exp-%s-%d%%-%d-client", this.mode, this.percent, this.numClient), true);
                         String stat = String.format("Thread - %d , Done [%d%%] total: %d time: %f ms avg lat: %f ms\n",
                                                      this.threadIdx, this.percent, count, durationSum, durationSum / count);
                         myWriter.write(stat);
@@ -151,9 +151,9 @@ public class ScalabiltyExp {
     public static void main(String[] args)  throws IOException, KeeperException, InterruptedException, ParseException {
         CommandLine cmd = argparse(args);
         String setting = String.format("host:%s zkPath:%s warm:%s duration:%s mode:%s numClient:%s", 
-                                        cmd.getOptionValue("host"), cmd.getOptionValue("zkPath"), 
+                                        cmd.getOptionValue("host"), cmd.getOptionValue("percent"),
                                         cmd.getOptionValue("warmup"), cmd.getOptionValue("duration"),
-                                        cmd.getOptionValue("mode"), cmd.getOptionValue("numClient"), cmd.getOptionValue("percent"));
+                                        cmd.getOptionValue("mode"), cmd.getOptionValue("numClient"));
         System.out.println(setting);
 
         ReentrantLock lock = new ReentrantLock(); // this is for writing stat to log
