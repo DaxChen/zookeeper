@@ -35,7 +35,7 @@ public class Measure {
           
           ++count;
           durationSum += (end - start) / 1000000.0;
-          if (count % 1000 == 0) {
+          if (count % 10000 == 0) {
           	System.out.println("warmup: [" + path + "] " + durationSum / count + " ms");
           }
         } catch (KeeperException|InterruptedException e) {
@@ -57,7 +57,7 @@ public class Measure {
           ++count;
           durationSum += (end - start) / 1000000.0;
           
-          if (count % 1000 == 0) {
+          if (count % 10000 == 0) {
           	System.out.println("measure: [" + path + "] " + durationSum / count + " ms");
           }
         } catch (KeeperException|InterruptedException e) {
