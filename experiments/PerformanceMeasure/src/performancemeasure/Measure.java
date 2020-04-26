@@ -35,11 +35,14 @@ public class Measure {
           
           ++count;
           durationSum += (end - start) / 1000000.0;
+          if (count % 1000 == 0) {
+          	System.out.println("warmup: [" + path + "] " + durationSum / count + " ms");
+          }
         } catch (KeeperException|InterruptedException e) {
             e.printStackTrace();
         }
       }
-      System.out.println("warmup: [" + path + "] " + durationSum / count + " ms");
+      System.out.println("final warmup: [" + path + "] " + durationSum / count + " ms");
       
       // 3 min measurement
       durationSum = 0;
@@ -53,11 +56,15 @@ public class Measure {
 
           ++count;
           durationSum += (end - start) / 1000000.0;
+          
+          if (count % 1000 == 0) {
+          	System.out.println("measure: [" + path + "] " + durationSum / count + " ms");
+          }
         } catch (KeeperException|InterruptedException e) {
             e.printStackTrace();
         }
       }
-      System.out.println("measure: [" + path + "] " + durationSum / count + " ms");
+      System.out.println("final measure: [" + path + "] " + durationSum / count + " ms");
       
       avgLatency = durationSum / count;
     }
@@ -73,35 +80,17 @@ public class Measure {
   	String hostPort = "10.10.1.2:2181"; // "10.10.1.2:2181" // "localhost:2181"
   	
 		// strong vs. weak paths 6s, 5s1w, ..., 1s5w, 6w
-  	if (false) {
-  		String weakLevel = "2";
-    	for (int numWeak = 0; numWeak <= 6; numWeak++) {
-    		StringBuilder paths = new StringBuilder();
-    		for (int num = 0; num < numWeak; num++) {
-    			paths.append(weakLevel);
-    		}
-    		for (int num = numWeak; num < 6; num++) {
-    			paths.append("1");
-    		}
-    		
-    		exp(paths.toString(), hostPort);
-    	}
-  	}
-  	
-  	// strong vs. midweak paths 6s, 5s1w, ..., 1s5w, 6w
-  	if (true) {
-  		String weakLevel = "3";
-     	for (int numWeak = 0; numWeak <= 6; numWeak++) {
-     		StringBuilder paths = new StringBuilder();
-     		for (int num = 0; num < numWeak; num++) {
-     			paths.append(weakLevel);
-     		}
-     		for (int num = numWeak; num < 6; num++) {
-     			paths.append("1");
-     		}
-     		
-     		exp(paths.toString(), hostPort);
-     	}
+		String weakLevel = "2";
+  	for (int numWeak = 0; numWeak <= 6; numWeak++) {
+  		StringBuilder paths = new StringBuilder();
+  		for (int num = 0; num < numWeak; num++) {
+  			paths.append(weakLevel);
+  		}
+  		for (int num = numWeak; num < 6; num++) {
+  			paths.append("1");
+  		}
+  		
+  		exp(paths.toString(), hostPort);
   	}
   }
   
