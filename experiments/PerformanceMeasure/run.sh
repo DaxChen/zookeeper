@@ -8,13 +8,15 @@ PS3='What do you want to run?'
 options=(
   "MeasureSetDataStrongWeak"
   "MeasureSetDataAsync"
+  "Measure"
   "Quit"
 )
 select opt in "${options[@]}"
 do
   case $opt in
     'MeasureSetDataStrongWeak'| \
-    'MeasureSetDataAsync')
+    'MeasureSetDataAsync'| \
+    'Measure')
       echo "running command:"
       echo "java -cp \"./bin:../../build/zookeeper-3.4.12.jar:../../build/lib/*\" performancemeasure.$opt $@"
       java -cp "./bin:../../build/zookeeper-3.4.12.jar:../../build/lib/*" performancemeasure.$opt $@
