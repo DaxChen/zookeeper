@@ -65,44 +65,26 @@ public class Measure {
 
   public static void main(String[] args) 
   		throws IOException, KeeperException, InterruptedException {
-//		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
+		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
 //		zk.create("/1", "strong0".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 //  	zk.create("/2", "weak000".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-//  	zk.create("/3", "midweak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+  	zk.create("/3", "midweak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     
   	String hostPort = "10.10.1.2:2181"; // "10.10.1.2:2181" // "localhost:2181"
   	
-		// strong vs. weak paths 6s, 5s1w, ..., 1s5w, 6w
-  	if (false) {
-  		String weakLevel = "2";
-    	for (int numWeak = 0; numWeak <= 6; numWeak++) {
-    		StringBuilder paths = new StringBuilder();
-    		for (int num = 0; num < numWeak; num++) {
-    			paths.append(weakLevel);
-    		}
-    		for (int num = numWeak; num < 6; num++) {
-    			paths.append("1");
-    		}
-    		
-    		exp(paths.toString(), hostPort);
-    	}
-  	}
-  	
   	// strong vs. midweak paths 6s, 5s1w, ..., 1s5w, 6w
-  	if (true) {
-  		String weakLevel = "3";
-     	for (int numWeak = 0; numWeak <= 6; numWeak++) {
-     		StringBuilder paths = new StringBuilder();
-     		for (int num = 0; num < numWeak; num++) {
-     			paths.append(weakLevel);
-     		}
-     		for (int num = numWeak; num < 6; num++) {
-     			paths.append("1");
-     		}
-     		
-     		exp(paths.toString(), hostPort);
-     	}
-  	}
+		String weakLevel = "3";
+   	for (int numWeak = 0; numWeak <= 6; numWeak++) {
+   		StringBuilder paths = new StringBuilder();
+   		for (int num = 0; num < numWeak; num++) {
+   			paths.append(weakLevel);
+   		}
+   		for (int num = numWeak; num < 6; num++) {
+   			paths.append("1");
+   		}
+   		
+   		exp(paths.toString(), hostPort);
+   	}
   }
   
   public static void exp(String paths, String hostPort) 
