@@ -1,7 +1,9 @@
 package performancemeasure;
 
+import java.util.*;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,17 +25,15 @@ public class ScalabiltyExp {
         Option zkPath = new Option("z", "zkPath", true, "read write path on zookeeper");
         Option warmup = new Option("w", "warmup", true, "warmup time");
         Option duration = new Option("d", "duration", true, "duration time");
-        Option mode = new Option("m", "mode", true, "read write different loading mode");
-        Option numClient = new Option("n", "numClient", true, "number of total clients");
-        Option percent = new Option("p", "percent", true, "percent of strong/weak 100=strong-only 0=weak-only");
+        Option numStrong = new Option("ns", "numStrong", true, "number of strong clients");
+        Option numWeak = new Option("nw", "numWeak", true, "number of weak clients");
         Option percentWrite = new Option("pw", "percentWrite", true, "percent of wrtie/read 100=write-only 0=read-only");
         options.addOption(host);
         options.addOption(zkPath);
         options.addOption(warmup);
         options.addOption(duration);
-        options.addOption(mode);
-        options.addOption(numClient);
-        options.addOption(percent);
+        options.addOption(numStrong);
+        options.addOption(numWeak);
         options.addOption(percentWrite);
 
         CommandLineParser parser = new DefaultParser();
@@ -53,69 +53,78 @@ public class ScalabiltyExp {
 
     static class MyRunnable implements Runnable {
         ZooKeeper zk;
-        String mode;
-        int numClient;
+        String zkPath; // this determine strong 1 or weak 2
+        // int numClient;
+        int numStrong;
+        int numWeak;
         int warmup;
         int duration;
         int threadIdx;
-        int percent;
         int percentWrite;
         ReentrantLock loglock;
+        
+        /* total */
+        double durationSum;
+        int count;
 
-        public MyRunnable(CommandLine cmd, ZooKeeper zk, int threadIdx, ReentrantLock loglock) {
+        /* seperate write & read */
+        double durationSumWrite;
+        double durationSumRead;
+        int countWrite;
+        int countRead;
+
+        /* CDF duration */
+        List<Double> durationLogWrite = new ArrayList<>();
+        // List<Double> durationLogRead = new ArrayList<>();
+
+        public MyRunnable(CommandLine cmd, ZooKeeper zk, int threadIdx, ReentrantLock loglock, String zkPath) {
             this.zk = zk;
-            this.threadIdx = threadIdx;
+            this.zkPath = zkPath;
             this.loglock = loglock;
-            this.mode = cmd.getOptionValue("mode", "write");
-            this.numClient = Integer.parseInt(cmd.getOptionValue("numClient", "1"));
+            this.threadIdx = threadIdx;
+
+            // this.numClient = Integer.parseInt(cmd.getOptionValue("numClient", "1"));
+            this.numStrong = Integer.parseInt(cmd.getOptionValue("numStrong", "0"));
+            this.numWeak = Integer.parseInt(cmd.getOptionValue("numWeak", "0"));
             this.warmup = Integer.parseInt(cmd.getOptionValue("warmup", "120"));
             this.duration = Integer.parseInt(cmd.getOptionValue("duration", "180"));
-            this.percent = Integer.parseInt(cmd.getOptionValue("percent", "100"));
             this.percentWrite = Integer.parseInt(cmd.getOptionValue("percentWrite", "100"));
         }
 
         public void run() {
-            double durationSum = 0;
-            int count = 0;
+            this.durationSum = 0;
+            this.count = 0;
             long finalTime = (long)(System.nanoTime() + (this.warmup + this.duration) * 1e9);
             long finalTimeWarm = (long)(System.nanoTime() + this.warmup * 1e9);
             boolean doneWarm = false;
 
             while (true) {
                 try {
-                    String ops = getOps(this.mode, this.percentWrite);
-                    String zkPath = getZkPath(this.percent);
+                    String ops = getOps(this.percentWrite);
 
                     long start, end;
                     if (ops == "write") {
                         start = System.nanoTime();
-                        zk.setData("/" + zkPath, "test".getBytes(), -1);
+                        zk.setData("/" + this.zkPath, "test".getBytes(), -1);
                         end = System.nanoTime();
                     } else {
                         start = System.nanoTime();
-                        zk.getData("/" + zkPath , false, null);
+                        zk.getData("/" + this.zkPath , false, null);
                         end = System.nanoTime();
                     }
 
-                    ++count;
-                    durationSum += (end - start) / 1000000.0;
+                    updateStat(ops, (end - start) / 1000000.0);
 
                     if (!doneWarm && (System.nanoTime() > finalTimeWarm)) { // warmup timeout
-                        System.out.println("Done Warmup [" + String.valueOf(this.percent) + "%] " + durationSum / count + " ms");
-                        count = 0;
-                        durationSum = 0;
+                        System.out.println("Done Warmup [" + this.zkPath + "]" + this.durationSum / this.count + " ms");
+                        resetStat();
                         doneWarm = true;
                     } 
                     if (System.nanoTime() > finalTime) { // duration timeout
-                        System.out.println("Done Duration [" + String.valueOf(this.percent) + "%] " + durationSum / count + " ms");
+                        System.out.println("Done Duration [" + this.zkPath + "] " + this.durationSum / this.count + " ms");
                         loglock.lock();
-                        FileWriter myWriter = new FileWriter(String.format("./outputs/exp-%s-%d%%write-%d%%strong-%d-client", 
-                                                             this.mode, this.percentWrite, this.percent, this.numClient), true);
-                        String stat = String.format("Thread - %d , Done [%d%%] total: %d time: %f ms avg lat: %f ms\n",
-                                                     this.threadIdx, this.percent, count, durationSum, durationSum / count);
-                        myWriter.write(stat);
-                        myWriter.flush();
-                        myWriter.close();
+                        exportStat();
+                        exportDuration();
                         loglock.unlock();
                         break;
                     }
@@ -125,52 +134,96 @@ public class ScalabiltyExp {
             }
         }
 
-        private String getOps(String ops, Integer percentWrite) {
-            if (ops == "write") {
-                this.percentWrite = 100; // update for log filename
-                return ops;
-            } else if (ops == "read") {
-                this.percentWrite = 0; // update for log filename
-                return ops;
-            }
-            Random rand = new Random(); 
-            if (percentWrite > rand.nextInt(100)) {
-                return "write"; // write
-            } else {
-                return "read"; // read
-            }
+        private void exportStat() throws IOException {
+            FileWriter myWriter = new FileWriter(String.format("./outputs/exp-%d%%write-%ds%dw", 
+                                                             this.percentWrite, this.numStrong, this.numWeak), true);
+            String stat = String.format("Thread - %d , Done [%s] totalCount: %d totalTime: %f ms avgLat: %f ms " + 
+                                        "writeCount: %d writeTime: %f ms avgLatWrite: %f ms " + 
+                                        "readCount: %d readTime: %f ms avgLatRead: %f ms\n",
+                                        this.threadIdx, this.zkPath, this.count, this.durationSum, this.durationSum / this.count,
+                                        this.countWrite, this.durationSumWrite, this.durationSumWrite / this.countWrite,
+                                        this.countRead, this.durationSumRead, this.durationSumRead / this.countRead);
+            myWriter.write(stat);
+            myWriter.flush();
+            myWriter.close();
         }
 
-        private String getZkPath(Integer percent) {
-            if (percent == 100) {
-                return "1"; // Strong
-            } else if (percent == 0) {
-                return "2"; // Weak
-            } else {
-                
+        private void exportDuration() throws IOException {
+            if (this.zkPath != "2") return; // only weak will be record
+
+            BufferedWriter br = new BufferedWriter(new FileWriter(String.format("./outputs/exp-weak-cdf-%d%%write-%ds%dw.csv", 
+                                                                              this.percentWrite, this.numStrong, this.numWeak), true));
+            StringBuilder sb = new StringBuilder();
+
+            // Append strings from array
+            for (Double element : this.durationLogWrite) {
+                sb.append(String.valueOf(element));
+                sb.append(",");
             }
+            br.write(sb.toString());
+            br.close();
+        }
+
+        private void updateStat(String ops, double duration) {
+            if (ops == "write") {
+                this.countWrite += 1;
+                this.durationSumWrite += duration;
+                if (this.countWrite % 500 == 0 && this.zkPath == "2") { 
+                    // sample to avoid too many data points
+                    // here we only record weak write
+                    this.durationLogWrite.add(duration);
+                }
+            } else if (ops == "read") {
+                this.countRead += 1;
+                this.durationSumRead += duration;
+                // this.durationLogRead.add(duration);
+            }
+            this.count += 1;
+            this.durationSum += duration;
+        }
+
+        private void resetStat() {
+            this.durationLogWrite.clear();
+            // this.durationLogRead.clear();
+            this.count = 0;
+            this.countRead = 0;
+            this.countWrite = 0;
+            this.durationSum = 0;
+            this.durationSumWrite = 0;
+            this.durationSumRead = 0;
+        }
+
+        private String getOps(Integer percentWrite) {
             Random rand = new Random(); 
-            if (percent > rand.nextInt(100)) {
-                return "1"; // Strong
-            } else {
-                return "2"; // Weak
+            if (percentWrite > rand.nextInt(100)) {
+                return "write";
             }
+            return "read";
         }
     }
     public static void main(String[] args)  throws IOException, KeeperException, InterruptedException, ParseException {
         CommandLine cmd = argparse(args);
-        String setting = String.format("host:%s strong:%s%% write:%s%% warm:%s duration:%s mode:%s numClient:%s", 
-                                        cmd.getOptionValue("host"), cmd.getOptionValue("percent"), cmd.getOptionValue("percentWrite"),
+        String setting = String.format("host:%s write:%s%% warm:%s duration:%s numStrong:%s numWeak:%s", 
+                                        cmd.getOptionValue("host"), cmd.getOptionValue("percentWrite"),
                                         cmd.getOptionValue("warmup"), cmd.getOptionValue("duration"),
-                                        cmd.getOptionValue("mode"), cmd.getOptionValue("numClient"));
+                                        cmd.getOptionValue("numStrong"), cmd.getOptionValue("numWeak"));
         System.out.println(setting);
 
         ReentrantLock lock = new ReentrantLock(); // this is for writing stat to log
-        int num = Integer.parseInt(cmd.getOptionValue("numClient", "1"));
+        // int num = Integer.parseInt(cmd.getOptionValue("numClient", "1"));
+        int numStrong = Integer.parseInt(cmd.getOptionValue("numStrong", "0"));
+        int numWeak = Integer.parseInt(cmd.getOptionValue("numWeak", "0"));
         String host = cmd.getOptionValue("host", "localhost:2182");
-        for (int i = 0; i < num ; i++) {
-            System.out.println("starting running thread - " + i);
-            Runnable r = new MyRunnable(cmd, new ZooKeeper(host, 5000, null), i, lock);
+
+        for (int i = 0; i < numStrong ; i++) {
+            System.out.println("starting running strong client - " + i);
+            Runnable r = new MyRunnable(cmd, new ZooKeeper(host, 5000, null), i, lock, "1");
+            new Thread(r).start();
+        }
+
+        for (int i = 0; i < numWeak ; i++) {
+            System.out.println("starting running weak client - " + i);
+            Runnable r = new MyRunnable(cmd, new ZooKeeper(host, 5000, null), i, lock, "2");
             new Thread(r).start();
         }
     }
