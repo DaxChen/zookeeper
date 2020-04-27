@@ -128,7 +128,8 @@ public class FileTxnLog implements TxnLog {
     volatile FileOutputStream fos = null;
 
     File logDir;
-    private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");;
+    private final boolean forceSync = false;
+    // private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");;
     long dbId;
     private LinkedList<FileOutputStream> streamsToFlush =
         new LinkedList<FileOutputStream>();
