@@ -18,12 +18,12 @@ public class MeasureSetDataStrongWeak {
             this.path = path;
             this.zk = zk;
         }
-
+        
         public void run() {
             double durationSum = 0;
             int count = 0;
 
-            while (true) {
+            while (durationSum / 60000 <= 5) {
                 try {
                     long start = System.nanoTime();
                     zk.setData("/" + path, "test".getBytes(), -1);
@@ -45,7 +45,7 @@ public class MeasureSetDataStrongWeak {
 
     public static void main(String[] args)
             throws IOException, KeeperException, InterruptedException {
-    		ZooKeeper zk = new ZooKeeper("localhost:2183", 5000, null);
+    		ZooKeeper zk = new ZooKeeper("10.10.1.2:2181", 5000, null);
     		zk.create("/1", "strong".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       	zk.create("/2", "weak".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     		
