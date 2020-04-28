@@ -1,0 +1,6 @@
+Thread - 0 , Done [2] totalCount: 1080017 totalTime: 179416.972104 ms avgLat: 0.166124 ms writeCount: 1080017 writeTime: 179416.972104 ms avgLatWrite: 0.166124 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
+Thread - 1 , Done [2] totalCount: 1081419 totalTime: 179445.699446 ms avgLat: 0.165935 ms writeCount: 1081419 writeTime: 179445.699446 ms avgLatWrite: 0.165935 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
+Thread - 2 , Done [2] totalCount: 1074156 totalTime: 179469.578365 ms avgLat: 0.167080 ms writeCount: 1074156 writeTime: 179469.578365 ms avgLatWrite: 0.167080 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
+Thread - 3 , Done [2] totalCount: 1068579 totalTime: 179488.196264 ms avgLat: 0.167969 ms writeCount: 1068579 writeTime: 179488.196264 ms avgLatWrite: 0.167969 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
+Thread - 4 , Done [2] totalCount: 1055169 totalTime: 179462.885928 ms avgLat: 0.170080 ms writeCount: 1055169 writeTime: 179462.885928 ms avgLatWrite: 0.170080 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
+Thread - 5 , Done [2] totalCount: 1014524 totalTime: 179491.821034 ms avgLat: 0.176922 ms writeCount: 1014524 writeTime: 179491.821034 ms avgLatWrite: 0.176922 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
