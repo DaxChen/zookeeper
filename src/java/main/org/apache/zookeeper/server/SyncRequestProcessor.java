@@ -121,9 +121,9 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
     public void run() {
         try {
         	// for mid-weak consistency, we set all followers' forceSyncWS to false
-        	if (!(zks instanceof LeaderZooKeeperServer)) {
-        		FileTxnLog.forceSyncWS = true;
-        	}
+        	// if (!(zks instanceof LeaderZooKeeperServer)) {
+        		// FileTxnLog.forceSyncWS = true;
+        	// }
             int logCount = 0;
 
             // we do this in an attempt to ensure that not all of the servers
@@ -143,10 +143,10 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                     }
                 }
                 
-                if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null 
-                		&& (si.userDataPath.charAt(1) != '2' || si.userDataPath.charAt(1) != '3')) {
-                	FileTxnLog.forceSyncWS = true;
-                }
+                // if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null 
+                // 		&& (si.userDataPath.charAt(1) != '2' || si.userDataPath.charAt(1) != '3')) {
+                // 	FileTxnLog.forceSyncWS = true;
+                // }
                 
                 // requestOfDeath = a shut down request
                 if (si == requestOfDeath) {
