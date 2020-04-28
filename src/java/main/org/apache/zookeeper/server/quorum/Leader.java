@@ -374,6 +374,7 @@ public class Leader {
         long electionTimeTaken = self.end_fle - self.start_fle;
         self.setElectionTimeTaken(electionTimeTaken);
         LOG.debug("\u001b[0;31m" + "LEADING" + "\u001b[m ");
+        System.out.println("\u001b[0;31m" + "LEADING" + "\u001b[m ");
         LOG.info("LEADING - LEADER ELECTION TOOK - {}", electionTimeTaken);
         self.start_fle = 0;
         self.end_fle = 0;
