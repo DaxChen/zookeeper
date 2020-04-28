@@ -45,7 +45,7 @@ public class MeasureSetDataStrongWeak {
 
         for (String path : args) {
             System.out.println("starting thread for path: " + path);
-            Runnable r = new MyRunnable(path, new ZooKeeper("localhost:2182", 5000, null));
+            Runnable r = new MyRunnable(path, new ZooKeeper("10.10.1.2:2181", 5000, null));
             new Thread(r).start();
         }
     }

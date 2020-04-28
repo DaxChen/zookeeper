@@ -14,7 +14,7 @@ PERCENT_WRITE=100
 echo "What Percentage Write ops? [0-100]"
 read PERCENT_WRITE
 
-for s in $(seq 1 6); do
+for s in $(seq 0 6); do
   STRONG_NUM=$s
   WEAK_NUM=$((6 - $s))
   echo ""
