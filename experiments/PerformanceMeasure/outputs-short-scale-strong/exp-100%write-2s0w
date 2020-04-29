@@ -1,0 +1,2 @@
+Thread - 0 , Done [1] totalCount: 230984 totalTime: 179678.126615 ms avgLat: 0.777881 ms writeCount: 230984 writeTime: 179678.126615 ms avgLatWrite: 0.777881 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms
+Thread - 1 , Done [1] totalCount: 230993 totalTime: 179698.989050 ms avgLat: 0.777941 ms writeCount: 230993 writeTime: 179698.989050 ms avgLatWrite: 0.777941 ms readCount: 0 readTime: 0.000000 ms avgLatRead: NaN ms

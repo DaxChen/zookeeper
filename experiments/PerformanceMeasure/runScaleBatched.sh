@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DURATION=20  # default 3 mins
-WARM=10      # default 2 mins
+DURATION=180  # default 3 mins
+WARM=120      # default 2 mins
 
 # echo "How many strong client want to create?"
 STRONG_NUM=1
@@ -12,12 +12,15 @@ HOST='10.10.1.2:2181'
 # echo "What Percentage Write ops? [0-100]"
 PERCENT_WRITE=100
 
-for ((i = 1; i <= 128; i *= 2)); do
-  STRONG_NUM=$i
-  WEAK_NUM=0
+for ((i = 2; i <= 1024; i *= 2)); do
+  STRONG_NUM=$(($i / 2))
+  WEAK_NUM=$(($i / 2))
   echo ""
   echo "=============================="
   echo "===       START EXP        ==="
+  echo "===------------------------==="
+  echo "=== STRONG_NUM = $STRONG_NUM"
+  echo "=== WEAK_NUM   = $WEAK_NUM"
   echo "=============================="
   echo ""
 
