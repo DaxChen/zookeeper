@@ -657,6 +657,26 @@ public class Leader {
                   sendSync(r);
               }
             }
+            
+            // when a weak request is committed, commit weak requests blocked by the weak
+            Long weakZxid = zxid + 1;
+            while (blockedWeakProposals.containsKey(weakZxid)) {
+            	Proposal weakP = blockedWeakProposals.get(weakZxid);
+          		
+          		commit(weakZxid);
+              inform(weakP);
+              zk.commitProcessor.commit(weakP.request);
+              if (pendingSyncs.containsKey(zxid)) {
+                for(LearnerSyncRequest r: pendingSyncs.remove(weakZxid)) {
+                  // System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+                  sendSync(r);
+                }
+              }
+              
+              weakZxid++;
+              blockedWeakProposals.remove(weakZxid);
+              blockedWeakZxids.remove(weakZxid);
+          	}
             return;
         	}
         }
