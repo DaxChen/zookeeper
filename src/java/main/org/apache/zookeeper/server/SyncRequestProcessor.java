@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.zookeeper.proto.SetDataRequest;
 import org.apache.zookeeper.server.persistence.FileTxnLog;
 import org.apache.zookeeper.server.quorum.LeaderZooKeeperServer;
+import org.apache.zookeeper.txn.SetDataTxn;
+
 /**
  * This RequestProcessor logs requests to disk. It batches the requests to do
  * the io efficiently. The request is not passed to the next RequestProcessor
