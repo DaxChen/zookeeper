@@ -154,7 +154,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                 }
                 
                 if (si.txn != null && si.txn instanceof SetDataTxn) {
-                	System.out.println("hi");
+                	System.out.println(((SetDataTxn) si.txn).getPath());
                 }
                 
                 if (si != null) {
