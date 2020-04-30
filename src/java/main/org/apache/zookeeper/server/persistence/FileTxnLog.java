@@ -388,9 +388,7 @@ public class FileTxnLog implements TxnLog {
             streamsToFlush.removeFirst().close();
         }
         
-        if (isLeader) {
-        	forceSyncWS = false;
-        }   
+        forceSyncWS = false; 
     }
 
     /**
