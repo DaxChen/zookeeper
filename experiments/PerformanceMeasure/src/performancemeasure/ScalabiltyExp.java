@@ -168,7 +168,7 @@ public class ScalabiltyExp {
             if (ops == "write") {
                 this.countWrite += 1;
                 this.durationSumWrite += duration;
-                if (this.countWrite % 500 == 0 && this.zkPath == "2") { 
+                if (this.countWrite % 25 == 0 && this.zkPath == "2") { 
                     // sample to avoid too many data points
                     // here we only record weak write
                     this.durationLogWrite.add(duration);
