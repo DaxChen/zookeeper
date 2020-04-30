@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.zookeeper.ZooDefs.OpCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +151,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                     break;
                 }
                 
-                if (si.txn != null && si.txn instanceof OpCode.setData) {
+                if (si.txn != null && si.txn instanceof SetDataTxn) {
                 	System.out.println("hi");
                 }
                 
