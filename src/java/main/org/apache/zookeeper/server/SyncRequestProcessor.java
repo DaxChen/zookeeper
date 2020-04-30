@@ -122,9 +122,9 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
     public void run() {
         try {
         	// for very weak consistency, we set all followers' forceSyncWS to false
-        	if (!(zks instanceof LeaderZooKeeperServer)) {
-        		FileTxnLog.forceSyncWS = false;
-        	}
+//        	if (!(zks instanceof LeaderZooKeeperServer)) {
+//        		FileTxnLog.forceSyncWS = true;
+//        	}
             int logCount = 0;
 
             // we do this in an attempt to ensure that not all of the servers
@@ -144,9 +144,9 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                     }
                 }
                 
-                if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null && si.userDataPath.charAt(1) != '2') {
-                	FileTxnLog.forceSyncWS = true;
-                }
+//                if ((zks instanceof LeaderZooKeeperServer) && si.userDataPath != null && si.userDataPath.charAt(1) != '2') {
+//                	FileTxnLog.forceSyncWS = true;
+//                }
                 
                 // requestOfDeath = a shut down request
                 if (si == requestOfDeath) {
@@ -154,7 +154,9 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                 }
                 
                 if (si.txn != null && si.txn instanceof SetDataTxn) {
-                	System.out.println(((SetDataTxn) si.txn).getPath());
+                	if (((SetDataTxn) si.txn).getPath().charAt(1) != '2') {
+                		FileTxnLog.forceSyncWS = true;
+                	}
                 }
                 
                 if (si != null) {
