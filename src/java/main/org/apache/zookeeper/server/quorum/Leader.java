@@ -620,6 +620,7 @@ public class Leader {
         if (p.request.userDataPath != null && p.request.userDataPath.charAt(1) == '2' && !blockedWeakZxids.contains(zxid)) {
         	// block the weak proposal when its zxid != lastCommitted + 1
         	if (zxid != lastCommitted + 1) {
+        		System.out.println("block by weak");
             // LOG.info("===== Weak zxid " + zxid + " != lastCommitted + 1" + (lastCommitted + 1));
             
             // the weak proposal is blocked from committing until the lastCommitted+1 is committed
