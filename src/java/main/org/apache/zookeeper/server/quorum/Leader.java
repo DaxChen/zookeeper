@@ -685,7 +685,8 @@ public class Leader {
         // note that a weak request becomes a strong request if it has majority, but this wouldn't
         // happen, since a single weak request will either result to commit or be blocked by
         // lastCommitted >= zxid
-      	if (self.getQuorumVerifier().containsQuorum(p.ackSet)) { 
+      	if (p.request.userDataPath != null && p.request.userDataPath.charAt(1) != '2' && 
+      			self.getQuorumVerifier().containsQuorum(p.ackSet)) { 
             if (zxid != lastCommitted+1) {
                 LOG.warn("Commiting zxid 0x{} from {} not first!",
                         Long.toHexString(zxid), followerAddr);
