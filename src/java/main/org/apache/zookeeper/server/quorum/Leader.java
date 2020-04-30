@@ -620,7 +620,6 @@ public class Leader {
         if (p.request.userDataPath != null && p.request.userDataPath.charAt(1) == '2' && !blockedWeakZxids.contains(zxid)) {
         	// block the weak proposal when its zxid != lastCommitted + 1
         	if (zxid != lastCommitted + 1) {
-        		System.out.println("block by weak");
             // LOG.info("===== Weak zxid " + zxid + " != lastCommitted + 1" + (lastCommitted + 1));
             
             // the weak proposal is blocked from committing until the lastCommitted+1 is committed
@@ -659,25 +658,6 @@ public class Leader {
               }
             }
             
-            // when a weak request is committed, commit weak requests blocked by the weak
-            Long weakZxid = zxid + 1;
-            while (blockedWeakProposals.containsKey(weakZxid)) {
-            	Proposal weakP = blockedWeakProposals.get(weakZxid);
-          		
-          		commit(weakZxid);
-              inform(weakP);
-              zk.commitProcessor.commit(weakP.request);
-              if (pendingSyncs.containsKey(zxid)) {
-                for(LearnerSyncRequest r: pendingSyncs.remove(weakZxid)) {
-                  // System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
-                  sendSync(r);
-                }
-              }
-              
-              weakZxid++;
-              blockedWeakProposals.remove(weakZxid);
-              blockedWeakZxids.remove(weakZxid);
-          	}
             return;
         	}
         }
@@ -700,7 +680,7 @@ public class Leader {
             if (p.request == null) {
                 LOG.warn("Going to commmit null request for proposal: {}", p);
             }
-            System.out.println("this is weird " + zxid);
+            
             commit(zxid);
             inform(p);
             zk.commitProcessor.commit(p.request);
