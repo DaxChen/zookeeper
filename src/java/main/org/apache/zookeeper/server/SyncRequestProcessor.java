@@ -152,6 +152,10 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
                     break;
                 }
                 
+                if (si.txn != null && si.txn instanceof OpCode.setData) {
+                	System.out.println("hi");
+                }
+                
                 if (si != null) {
                     // track the number of records written to the log
                     if (zks.getZKDatabase().append(si)) {
