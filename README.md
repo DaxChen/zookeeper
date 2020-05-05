@@ -13,7 +13,7 @@ git clone https://github.com/YiShiunChang/zookeeper
 
 ## make sure you are on the right branch
 ```
-git chechout [branch name]
+git checkout [branch name]
 - Sol1: Dynamic forceSync: cs739/leaderConsistency
 - Sol2: Short-circuit at PrepRequestProcessor: cs739/short-circuit-final-response
 - Competitor: Deploy 2 Zookeeper: cs739/2-zookeeper-exp for strong server & cs739/2-zookeeper-exp-weak for weak server
