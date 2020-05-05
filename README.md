@@ -4,14 +4,14 @@
 
 This branch `cs739/dev` is based on tag `release-3.4.12`
 
-## setup
+## Setup
 
 ```sh
 # clone this repo
 git clone https://github.com/YiShiunChang/zookeeper
 ```
 
-## make sure you are on the right branch
+## Make sure you are on the right branch
 ```
 git checkout [branch name]
 - Sol1: Dynamic forceSync: cs739/leaderConsistency
@@ -19,7 +19,7 @@ git checkout [branch name]
 - Competitor: Deploy 2 Zookeeper: cs739/2-zookeeper-exp for strong server & cs739/2-zookeeper-exp-weak for weak server
 ```
 
-## build
+## Build
 
 ```sh
 # build zookeeper
@@ -36,8 +36,6 @@ cd bin
 ./zkServer.sh start-foreground ../conf/zoo-3.cfg
 ```
 
-## Running Experiments
-
 
 ## Develop Client program with Java API in Eclipse
 1. build zookeeper using ant
@@ -46,6 +44,14 @@ cd bin
 4. User Libraries -> User Libraries... -> new -> name:zookeeper-cs739
 5. Add external JARs... -> add build/zookeeper-3.4.12.jar & all jars in build/lib
 6. Now you can import zookeeper in your java code
+
+
+## Experiments Results
+- Achieved 	**5.04x** in Weak compare to Strong request latency
+- Successfully **separated latency entanglement** in different combination of Strong and Weak Clients
+- Nearing **no effect** on Strong request **0.93x** and **1.98x** on Weak request latency comparing to 2 ZooKeeper
+- Corrupted data isolation to **ensure availability** for **different consistency level**
+
 
 ## Benchmark in MongoDB
 Performance entanglement on another system, apply multi-consistency and see if weak request is faster than strong
