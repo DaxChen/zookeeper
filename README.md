@@ -9,11 +9,14 @@ This branch `cs739/dev` is based on tag `release-3.4.12`
 ```sh
 # clone this repo
 git clone https://github.com/YiShiunChang/zookeeper
+```
 
-cd zookeeper
-
-# make sure you are on the right branch
-git checkout cs739/dev
+## make sure you are on the right branch
+```
+git chechout [branch name]
+- Sol1: Dynamic forceSync: cs739/leaderConsistency
+- Sol2: Short-circuit at PrepRequestProcessor: cs739/short-circuit-final-response
+- Competitor: Deploy 2 Zookeeper: cs739/2-zookeeper-exp for strong server & cs739/2-zookeeper-exp-weak for weak server
 ```
 
 ## build
