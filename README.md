@@ -51,8 +51,9 @@ cd bin
 - Successfully **separated latency entanglement** in different combination of Strong and Weak Clients
 - Nearing **no effect** on Strong request **0.93x** and **1.98x** on Weak request latency comparing to 2 ZooKeeper
 - Corrupted data isolation to **ensure availability** for **different consistency level**
-- [Presentation slides](https://github.com/YiShiunChang/zookeeper/blob/cs739/dev/_Report/CS739%20-%20Final%20Presentation.pdfhttps://github.com/YiShiunChang/zookeeper/blob/cs739/dev/_Report/CS739%20-%20Final%20Presentation.pdf)
+- [Presentation slides](./_Report/CS739%20-%20Final%20Presentation.pdf)
 - [Report]()
+
 
 ## Benchmark in MongoDB
 Performance entanglement on another system, apply multi-consistency and see if weak request is faster than strong
