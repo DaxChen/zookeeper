@@ -56,7 +56,7 @@ cd bin
 - Cumulative distrubution of latency <br>
 <img src=./_Report/cdf50.png width="50%"><img src=./_Report/cdf100.png width="50%">
 - [Presentation slides](./_Report/CS739%20-%20Final%20Presentation.pdf)
-- [Report]()
+- [Report](./_Report/Performance_and_Reliability_Isolation_in_ZooKeeper.pdf)
 
 ## Benchmark in MongoDB
 Performance entanglement on another system, apply multi-consistency and see if weak request is faster than strong
