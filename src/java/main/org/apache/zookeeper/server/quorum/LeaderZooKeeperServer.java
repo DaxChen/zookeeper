@@ -40,6 +40,7 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
  */
 public class LeaderZooKeeperServer extends QuorumZooKeeperServer {
     CommitProcessor commitProcessor;
+    public FinalRequestProcessor finalProcessor;
 
     /**
      * @param port
@@ -58,7 +59,7 @@ public class LeaderZooKeeperServer extends QuorumZooKeeperServer {
     
     @Override
     protected void setupRequestProcessors() {
-        RequestProcessor finalProcessor = new FinalRequestProcessor(this);
+        finalProcessor = new FinalRequestProcessor(this);
         RequestProcessor toBeAppliedProcessor = new Leader.ToBeAppliedRequestProcessor(
                 finalProcessor, getLeader().toBeApplied);
         commitProcessor = new CommitProcessor(toBeAppliedProcessor,

@@ -102,11 +102,14 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
                             nextPending.hdr = r.hdr;
                             nextPending.txn = r.txn;
                             nextPending.zxid = r.zxid;
+                            LOG.debug("\u001b[0;31m" + "CommitP matched nextPending with committedRequests" + "\u001b[m ");
+                            LOG.debug("nextPending={}", nextPending);
                             toProcess.add(nextPending);
                             nextPending = null;
                         } else {
                             // this request came from someone else so just
                             // send the commit packet
+                            LOG.debug("\u001b[0;31m" + "CommitP didn't match nextPending, toProcess.add" + "\u001b[m ");
                             toProcess.add(r);
                         }
                     }
@@ -130,6 +133,8 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
                         case OpCode.setACL:
                         case OpCode.createSession:
                         case OpCode.closeSession:
+                            LOG.debug("\u001b[0;31m" + "CommitP setting nextPending=request" + "\u001b[m ");
+                            LOG.debug("request={}", request);
                             nextPending = request;
                             break;
                         case OpCode.sync:
@@ -161,6 +166,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
                 return;
             }
             if (LOG.isDebugEnabled()) {
+                LOG.debug("\u001b[0;31m" + "CommitPorcessor.commit" + "\u001b[m ");
                 LOG.debug("Committing request:: " + request);
             }
             committedRequests.add(request);
@@ -171,6 +177,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements RequestP
     synchronized public void processRequest(Request request) {
         // request.addRQRec(">commit");
         if (LOG.isDebugEnabled()) {
+            LOG.debug("\u001b[0;31m" + "CommitProcessor.pr" + "\u001b[m ");
             LOG.debug("Processing request:: " + request);
         }
         

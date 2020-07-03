@@ -575,7 +575,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
                 switch (qp.getType()) {
                 case Leader.ACK:
-                    LOG.info("[Debug] Leader.ACK");
+                    LOG.debug("[Debug] Leader.ACK");
                     if (this.learnerType == LearnerType.OBSERVER) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Received ACK from Observer  " + this.sid);

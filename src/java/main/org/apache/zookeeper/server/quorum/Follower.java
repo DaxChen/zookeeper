@@ -113,6 +113,9 @@ public class Follower extends Learner{
             ping(qp);            
             break;
         case Leader.PROPOSAL:            
+            LOG.debug("\u001b[0;31m" + "Follower got Leader.PROPOSAL" + "\u001b[m ");
+            LOG.trace("QuorumPacket: {}", qp);
+
             TxnHeader hdr = new TxnHeader();
             Record txn = SerializeUtils.deserializeTxn(qp.getData(), hdr);
             if (hdr.getZxid() != lastQueued + 1) {
@@ -125,6 +128,7 @@ public class Follower extends Learner{
             fzk.logRequest(hdr, txn);
             break;
         case Leader.COMMIT:
+            LOG.debug("\u001b[0;31m" + "Follower got Leader.COMMIT" + "\u001b[m ");
             fzk.commit(qp.getZxid());
             break;
         case Leader.UPTODATE:
@@ -134,6 +138,7 @@ public class Follower extends Learner{
             revalidate(qp);
             break;
         case Leader.SYNC:
+            LOG.debug("\u001b[0;31m" + "Follower got Leader.SYNC" + "\u001b[m ");
             fzk.sync();
             break;
         default:

@@ -192,6 +192,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
         if (toFlush.isEmpty())
             return;
 
+        LOG.debug("\u001b[0;31m" + "SyncRP.flush" + "\u001b[m ");
         zks.getZKDatabase().commit();
         while (!toFlush.isEmpty()) {
             Request i = toFlush.remove();
@@ -227,6 +228,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements Req
     }
 
     public void processRequest(Request request) {
+        LOG.debug("\u001b[0;31m" + "SyncRP.pr" + "\u001b[m ");
         // request.addRQRec(">sync");
         queuedRequests.add(request);
     }

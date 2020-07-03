@@ -82,6 +82,10 @@ public class Request {
     
     private KeeperException e;
 
+    public String userDataPath;
+
+    public boolean respondedWeakly = false;
+
     public Object getOwner() {
         return owner;
     }
@@ -89,8 +93,6 @@ public class Request {
     public void setOwner(Object owner) {
         this.owner = owner;
     }
-
-    public String userDataPath;
 
     /**
      * is the packet type a valid packet in zookeeper
@@ -231,6 +233,7 @@ public class Request {
         }
         sb.append(" reqpath:").append(path);
         sb.append(" userDataPath:").append(userDataPath);
+        sb.append(" respondedWeakly:").append(respondedWeakly);
 
         
 

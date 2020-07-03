@@ -41,6 +41,8 @@ public class SendAckRequestProcessor implements RequestProcessor, Flushable {
         if(si.type != OpCode.sync){
             QuorumPacket qp = new QuorumPacket(Leader.ACK, si.hdr.getZxid(), null,
                 null);
+            LOG.debug("\u001b[0;31m" + "SendAckRP.pr" + "\u001b[m");
+            LOG.debug("QuorumPacket={}", qp);
             try {
                 learner.writePacket(qp, false);
             } catch (IOException e) {

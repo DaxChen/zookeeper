@@ -58,6 +58,7 @@ import org.apache.zookeeper.proto.CheckVersionRequest;
 import org.apache.zookeeper.server.ZooKeeperServer.ChangeRecord;
 import org.apache.zookeeper.server.auth.AuthenticationProvider;
 import org.apache.zookeeper.server.auth.ProviderRegistry;
+import org.apache.zookeeper.server.quorum.LeaderZooKeeperServer;
 import org.apache.zookeeper.server.quorum.Leader.XidRolloverException;
 import org.apache.zookeeper.txn.CreateSessionTxn;
 import org.apache.zookeeper.txn.CreateTxn;
@@ -411,13 +412,20 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                         null, -1, null));
                 break;
             case OpCode.setData:
-            		System.out.println("====== PrepRequestProcessor setData case ======");
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 SetDataRequest setDataRequest = (SetDataRequest)record;
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, setDataRequest);
                 path = setDataRequest.getPath();
                 request.userDataPath = path; // update node path
+
+                // short circuit weak case
+                if (path != null && path.startsWith("/2")) {
+                    LOG.debug("\u001b[0;31m" + "PrepRP got weak case" + "\u001b[m");
+                    request.respondedWeakly = true;
+                    ((LeaderZooKeeperServer)zks).finalProcessor.respondWeak(request);
+                }
+
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
                 checkACL(zks, nodeRecord.acl, ZooDefs.Perms.WRITE,
@@ -556,6 +564,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 pRequest2Txn(request.type, zks.getNextZxid(), request, deleteRequest, true);
                 break;
             case OpCode.setData:
+                LOG.debug("\u001b[0;31m" + "PrepRP got setData Request" + "\u001b[m ");
                 SetDataRequest setDataRequest = new SetDataRequest();                
                 pRequest2Txn(request.type, zks.getNextZxid(), request, setDataRequest, true);
                 break;
@@ -690,6 +699,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             }
         }
         request.zxid = zks.getZxid();
+        LOG.debug("\u001b[0;31m" + "request.zxid={}" + "\u001b[m ", request.zxid);
         nextProcessor.processRequest(request);
     }
 

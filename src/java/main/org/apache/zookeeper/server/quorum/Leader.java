@@ -373,6 +373,8 @@ public class Leader {
         self.end_fle = Time.currentElapsedTime();
         long electionTimeTaken = self.end_fle - self.start_fle;
         self.setElectionTimeTaken(electionTimeTaken);
+        LOG.debug("\u001b[0;31m" + "LEADING" + "\u001b[m ");
+        System.out.println("\u001b[0;31m" + "LEADING" + "\u001b[m ");
         LOG.info("LEADING - LEADER ELECTION TOOK - {}", electionTimeTaken);
         self.start_fle = 0;
         self.end_fle = 0;
@@ -549,6 +551,8 @@ public class Leader {
         }
         isShutdown = true;
     }
+    
+    ConcurrentMap<Long, Proposal> respondedWeaks = new ConcurrentHashMap<>();
 
     /**
      * Keep a count of acks that are received by the leader for a particular
@@ -559,7 +563,8 @@ public class Leader {
      * @param followerAddr
      */
     synchronized public void processAck(long sid, long zxid, SocketAddress followerAddr) {
-        LOG.info("[Debug] processAck starts");
+        LOG.debug("\u001b[0;31m" + "Leader.processAck(sid={}, zxid={})" + "\u001b[m", sid, zxid);
+        LOG.debug("\u001b[0;31m" + "lastCommitted={}" + "\u001b[m", lastCommitted);
         LocalTime time1 = LocalTime.now();
         if (LOG.isTraceEnabled()) {
             LOG.trace("Ack zxid: 0x{}", Long.toHexString(zxid));
@@ -605,59 +610,8 @@ public class Leader {
             LOG.debug("Count for zxid: 0x{} is {}",
                     Long.toHexString(zxid), p.ackSet.size());
         }
-      	
-      	// strong consistency with nodePath1
-      	if (p.request.userDataPath != null && 
-      			p.request.userDataPath.substring(1, 2).compareTo("1") == 0 &&
-      			self.getQuorumVerifier().containsQuorum(p.ackSet)) {
-      		System.out.println("======================= strong case =======================");
-          if (zxid != lastCommitted+1) {
-              LOG.warn("Commiting zxid 0x{} from {} not first!",
-                      Long.toHexString(zxid), followerAddr);
-              LOG.warn("First is 0x{}", Long.toHexString(lastCommitted + 1));
-          }
-          outstandingProposals.remove(zxid);
-          if (p.request != null) {
-              toBeApplied.add(p);
-          }
-
-          if (p.request == null) {
-              LOG.warn("Going to commmit null request for proposal: {}", p);
-          }
-          commit(zxid);
-          inform(p);
-          zk.commitProcessor.commit(p.request);
-          if(pendingSyncs.containsKey(zxid)){
-              for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-                  sendSync(r);
-              }
-          } // weak consistency with nodePath 2
-      	} else if (p.request.userDataPath != null && 
-      			p.request.userDataPath.substring(1, 2).compareTo("2") == 0) {
-      			System.out.println("======================= weak case =======================");
-	          if (zxid != lastCommitted+1) {
-	              LOG.warn("Commiting zxid 0x{} from {} not first!",
-	                      Long.toHexString(zxid), followerAddr);
-	              LOG.warn("First is 0x{}", Long.toHexString(lastCommitted + 1));
-	          }
-	          outstandingProposals.remove(zxid);
-	          if (p.request != null) {
-	              toBeApplied.add(p);
-	          }
-	
-	          if (p.request == null) {
-	              LOG.warn("Going to commmit null request for proposal: {}", p);
-	          }
-	          commit(zxid);
-	          inform(p);
-	          zk.commitProcessor.commit(p.request);
-	          if(pendingSyncs.containsKey(zxid)){
-	              for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-	                  sendSync(r);
-	              }
-	          } // normal case 
-        } else if (self.getQuorumVerifier().containsQuorum(p.ackSet)) { 
-        		System.out.println("======================= normal case =======================");
+        
+        if (self.getQuorumVerifier().containsQuorum(p.ackSet)) { 
             if (zxid != lastCommitted+1) {
                 LOG.warn("Commiting zxid 0x{} from {} not first!",
                         Long.toHexString(zxid), followerAddr);
@@ -677,18 +631,20 @@ public class Leader {
             zk.commitProcessor.commit(p.request);
             if(pendingSyncs.containsKey(zxid)){
                 for(LearnerSyncRequest r: pendingSyncs.remove(zxid)) {
-                    System.out.println("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
+                    LOG.debug("[Debug] LearnerSyncRequest sendSync with type: " + r.type); 
                     sendSync(r);
                 }
             }
+        } else {
+            // strong case, but didn't contain quorum
+            LOG.debug("\u001b[0;31m" + "Doesn't contain quorum, do nothing" + "\u001b[m");
         }
         LocalTime time2 = LocalTime.now();
         Duration duration = Duration.between(time1, time2); // seconds
-        LOG.info("[Debug] processAck ends");
-        System.out.println("[Debug]request: "+ p.request);
+        LOG.debug("[Debug] processAck ends, request={}", p.request);
         if(p.request.type == OpCode.setData){
-            System.out.println("[Debug] p.request with type setData"); 
-            System.out.println("[Debug] setData processRequest time: " + duration); 
+            LOG.debug("[Debug] p.request with type setData"); 
+            LOG.debug("[Debug] setData processRequest time: " + duration); 
         }
         
     }
@@ -779,12 +735,14 @@ public class Leader {
      */
     public void commit(long zxid) {
         synchronized(this){
+            LOG.debug("\u001b[0;31m" + "Leader.commit zxid={}" + "\u001b[m", zxid);
             lastCommitted = zxid;
         }
         QuorumPacket qp = new QuorumPacket(Leader.COMMIT, zxid, null, null);
+        LOG.debug("qp={}", qp);
         sendPacket(qp);
-    }
-    
+    } 
+   
     /**
      * Create an inform packet and send it to all observers.
      * @param zxid
@@ -793,6 +751,9 @@ public class Leader {
     public void inform(Proposal proposal) {   
         QuorumPacket qp = new QuorumPacket(Leader.INFORM, proposal.request.zxid, 
                                             proposal.packet.getData(), null);
+        LOG.debug("\u001b[0;31m" + "Leader.inform" + "\u001b[m");
+        LOG.debug("proposal={}", proposal);
+        LOG.debug("qp={}", qp);
         sendObserverPacket(qp);
     }
 
@@ -858,6 +819,12 @@ public class Leader {
             lastProposed = p.packet.getZxid();
             outstandingProposals.put(lastProposed, p);
             sendPacket(pp);
+
+            LOG.debug("\u001b[0;31m" + "Leader.propose" + "\u001b[m ");
+            LOG.debug("request={}", request);
+            LOG.debug("QuorumPacket={}", pp);
+            LOG.debug("Proposal={}", p);
+            LOG.debug("lastProposed={}", lastProposed);
         }
         return p;
     }
